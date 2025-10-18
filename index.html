@@ -1,1003 +1,394 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LumenAI | Premium AI Assistant</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>SynapseGPT - Образовательная нейросеть</title>
     <style>
         :root {
-            --primary: #00f5ff;
-            --primary-glow: #00a2ff;
-            --secondary: #ff00e5;
-            --accent: #00ff95;
-            --background: #0a0a1a;
-            --surface: #151530;
-            --surface-glow: #1e1e40;
-            --text: #ffffff;
-            --text-secondary: #b8b8ff;
-            --success: #00ff95;
-            --warning: #ffb800;
-            --error: #ff4757;
-            --user-msg: rgba(0, 245, 255, 0.15);
-            --ai-msg: rgba(30, 30, 64, 0.8);
-            --premium-gold: #ffd700;
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+            --success: #2ecc71;
+            --warning: #f39c12;
         }
-
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: var(--background);
-            color: var(--text);
+            background-color: var(--light);
+            color: var(--dark);
             line-height: 1.6;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .neon-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(0, 245, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 0, 229, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(0, 255, 149, 0.05) 0%, transparent 50%);
-            z-index: -2;
-        }
-
-        .app {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        /* Auth Screens */
-        .auth-container {
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
             min-height: 100vh;
-            padding: 20px;
         }
-
-        .auth-box {
-            background: var(--surface);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 40px;
-            width: 100%;
-            max-width: 480px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .auth-box::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-        }
-
-        .auth-logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .auth-logo .logo {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-        }
-
-        .auth-tabs {
-            display: flex;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 30px;
-        }
-
-        .auth-tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-
-        .auth-tab.active {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        
+        header {
+            background-color: var(--primary);
             color: white;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .form-input {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 15px;
-            color: var(--text);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.1);
-        }
-
-        .auth-btn {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .auth-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 245, 255, 0.3);
-        }
-
-        /* Main App */
-        .main-app {
-            display: none;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        /* Header */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 0;
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
+        
         .logo {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .logo-icon {
+            font-size: 1.8rem;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
             font-weight: 600;
         }
-
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--text);
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        
+        .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
         }
-
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        /* Chat Container */
-        .chat-container {
+        
+        main {
             flex: 1;
-            display: flex;
-            gap: 20px;
-            height: calc(100vh - 140px);
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
         }
-
-        /* Sidebar */
-        .sidebar {
-            width: 320px;
-            background: var(--surface);
-            border-radius: 20px;
-            padding: 20px;
+        
+        .chat-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 1rem;
         }
-
-        .new-chat-btn {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+        
+        .user-message {
+            background-color: var(--secondary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+        
+        .bot-message {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+        
+        .input-area {
+            display: flex;
+            border-top: 1px solid #e9ecef;
+            padding: 1rem;
+        }
+        
+        input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.3s;
+        }
+        
+        input:focus {
+            border-color: var(--secondary);
+        }
+        
+        button {
+            background-color: var(--secondary);
             color: white;
             border: none;
-            padding: 15px;
-            border-radius: 12px;
-            font-weight: 600;
+            padding: 12px 20px;
+            margin-left: 10px;
+            border-radius: 4px;
             cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .learning-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .learning-controls {
             display: flex;
-            align-items: center;
             gap: 10px;
-            transition: all 0.3s ease;
+            margin-bottom: 1rem;
         }
-
-        .new-chat-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 245, 255, 0.3);
-        }
-
-        .chat-history {
+        
+        .learning-controls button {
             flex: 1;
-            overflow-y: auto;
         }
-
-        .history-item {
-            padding: 12px 15px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid transparent;
-        }
-
-        .history-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .history-item.active {
-            background: rgba(0, 245, 255, 0.1);
-            border-color: var(--primary);
-        }
-
-        .history-title {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .history-preview {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            opacity: 0.7;
-        }
-
-        /* Chat Area */
-        .chat-area {
-            flex: 1;
-            background: var(--surface);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .messages-container {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .message {
-            max-width: 80%;
-            padding: 15px 20px;
-            border-radius: 18px;
-            line-height: 1.6;
-            position: relative;
-            animation: fadeIn 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .user-message {
-            align-self: flex-end;
-            background: var(--user-msg);
-            border-bottom-right-radius: 5px;
-        }
-
-        .ai-message {
-            align-self: flex-start;
-            background: var(--ai-msg);
-            border-bottom-left-radius: 5px;
-        }
-
-        .message-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            font-weight: 600;
+        
+        .learning-status {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
             font-size: 0.9rem;
         }
-
-        .message-content {
-            word-wrap: break-word;
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
         }
-
-        .message-time {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            margin-top: 8px;
-            text-align: right;
-            opacity: 0.7;
+        
+        .status-active {
+            background-color: var(--success);
         }
-
-        /* Input Area */
-        .input-area {
-            padding: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            background: var(--surface-glow);
+        
+        .status-inactive {
+            background-color: #95a5a6;
         }
-
-        .input-container {
-            display: flex;
-            gap: 12px;
-            align-items: end;
-        }
-
-        .message-input {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 15px;
-            color: var(--text);
-            font-size: 1rem;
-            resize: none;
-            min-height: 60px;
-            max-height: 120px;
-            font-family: inherit;
-            transition: all 0.3s ease;
-        }
-
-        .message-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.1);
-        }
-
-        .send-btn {
-            background: var(--primary);
+        
+        footer {
+            background-color: var(--dark);
             color: white;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            font-size: 1.1rem;
-        }
-
-        .send-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 5px 15px rgba(0, 245, 255, 0.3);
-        }
-
-        .send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Typing Indicator */
-        .typing-indicator {
-            display: none;
-            align-items: center;
-            gap: 12px;
-            padding: 15px 20px;
-            background: var(--ai-msg);
-            border-radius: 18px;
-            align-self: flex-start;
-            border-bottom-left-radius: 5px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin: 10px 0;
-        }
-
-        .typing-dots {
-            display: flex;
-            gap: 4px;
-        }
-
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--text-secondary);
-            border-radius: 50%;
-            animation: typing 1.4s infinite;
-        }
-
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-5px); }
-        }
-
-        /* API Status */
-        .api-status {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--surface);
-            padding: 10px 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--success);
-            animation: pulse 2s infinite;
-        }
-
-        .status-dot.connected { background: var(--success); }
-        .status-dot.error { background: var(--error); }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* Premium Badge */
-        .premium-badge {
-            background: linear-gradient(135deg, var(--premium-gold), #ff6b00);
-            color: #000;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            margin-left: 8px;
-        }
-
-        /* Welcome Message */
-        .welcome-message {
             text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
+            padding: 1.5rem;
+            font-size: 0.9rem;
         }
-
-        .welcome-message h3 {
-            margin-bottom: 10px;
-            color: var(--text);
+        
+        @media (max-width: 600px) {
+            main {
+                padding: 1rem;
+            }
+            
+            .chat-messages {
+                height: 300px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="neon-bg"></div>
+    <header>
+        <div class="logo">
+            <span class="logo-icon">🧠</span>
+            <h1>SynapseGPT</h1>
+        </div>
+        <p class="subtitle">Образовательная нейросеть с возможностью обучения</p>
+    </header>
     
-    <!-- Authentication Screen -->
-    <div class="auth-container" id="authContainer">
-        <div class="auth-box">
-            <div class="auth-logo">
-                <div class="logo">
-                    <i class="fas fa-brain-circuit"></i>
-                    LumenAI
-                </div>
-                <div style="color: var(--text-secondary); font-size: 0.9rem;">
-                    Premium AI Assistant
-                </div>
-            </div>
-
-            <div class="auth-tabs">
-                <div class="auth-tab active" data-tab="login">Login</div>
-                <div class="auth-tab" data-tab="register">Register</div>
-            </div>
-
-            <form class="auth-form" id="loginForm">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="auth-btn">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Login to LumenAI
-                </button>
-            </form>
-
-            <form class="auth-form" id="registerForm" style="display: none;">
-                <div class="form-group">
-                    <label class="form-label">Username</label>
-                    <input type="text" class="form-input" id="registerUsername" placeholder="username" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-input" id="registerEmail" placeholder="your@email.com" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-input" id="registerPassword" placeholder="••••••••" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Confirm Password</label>
-                    <input type="password" class="form-input" id="registerConfirmPassword" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="auth-btn">
-                    <i class="fas fa-user-plus"></i>
-                    Create Account
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Main Application -->
-    <div class="main-app" id="mainApp">
-        <!-- API Status -->
-        <div class="api-status">
-            <div class="status-dot connected"></div>
-            <span>AI API Connected</span>
-        </div>
-
-        <!-- Header -->
-        <div class="header">
-            <div class="logo">
-                <i class="fas fa-brain-circuit"></i>
-                LumenAI
-            </div>
-            <div class="user-menu">
-                <div class="user-avatar" id="userAvatar">U</div>
-                <span id="userName">User</span>
-                <span class="premium-badge">PREMIUM</span>
-                <button class="logout-btn" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
-                </button>
-            </div>
-        </div>
-
-        <!-- Chat Interface -->
+    <main>
         <div class="chat-container">
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <button class="new-chat-btn" id="newChatBtn">
-                    <i class="fas fa-plus"></i>
-                    New Chat
-                </button>
-                <div class="chat-history" id="chatHistory">
-                    <!-- Chat history will be here -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    Привет! Я SynapseGPT, образовательная нейросеть. Я могу помочь вам с учебными вопросами и обучаться на основе ваших материалов. Чем могу помочь?
                 </div>
             </div>
-
-            <!-- Chat Area -->
-            <div class="chat-area">
-                <div class="messages-container" id="messagesContainer">
-                    <div class="welcome-message">
-                        <h3>Welcome to LumenAI! 🚀</h3>
-                        <p>I'm your AI assistant powered by advanced language models. Ask me anything!</p>
-                    </div>
-                </div>
-
-                <!-- Typing Indicator -->
-                <div class="typing-indicator" id="typingIndicator">
-                    <div class="typing-dots">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    </div>
-                    <span>LumenAI is thinking...</span>
-                </div>
-
-                <!-- Input Area -->
-                <div class="input-area">
-                    <div class="input-container">
-                        <textarea 
-                            class="message-input" 
-                            id="messageInput" 
-                            placeholder="Ask LumenAI anything..."
-                            rows="1"
-                        ></textarea>
-                        <button class="send-btn" id="sendButton">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </div>
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Введите ваш вопрос или учебный материал...">
+                <button id="sendButton">Отправить</button>
             </div>
         </div>
-    </div>
+        
+        <div class="learning-section">
+            <h2>Обучение нейросети</h2>
+            <div class="learning-controls">
+                <button id="startLearning">Начать обучение</button>
+                <button id="resetLearning">Сбросить знания</button>
+            </div>
+            <div class="learning-status">
+                <span class="status-indicator status-inactive" id="statusIndicator"></span>
+                <span id="statusText">Обучение неактивно</span>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>SynapseGPT &copy; 2023 | Образовательная нейросеть с адаптивным обучением</p>
+    </footer>
 
     <script>
-        // AI API Configuration with correct endpoint
-        const AI_API_CONFIG = {
-            apiKey: "AIzaSyDZhU8prBy8ECBPVSS94V_KKPydT9DRqeU",
-            apiUrl: "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent"
-        };
-
-        class LumenAI {
-            constructor() {
-                this.currentUser = null;
-                this.conversationHistory = [];
-                this.currentChatId = this.generateChatId();
-                this.isProcessing = false;
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chatMessages');
+            const userInput = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            const startLearningBtn = document.getElementById('startLearning');
+            const resetLearningBtn = document.getElementById('resetLearning');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            let isLearning = false;
+            let knowledgeBase = [];
+            
+            // Функция для добавления сообщения в чат
+            function addMessage(text, isUser) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                messageDiv.classList.add(isUser ? 'user-message' : 'bot-message');
+                messageDiv.textContent = text;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Функция для обработки отправки сообщения
+            function handleSendMessage() {
+                const message = userInput.value.trim();
+                if (message === '') return;
                 
-                this.init();
-            }
-
-            init() {
-                this.setupEventListeners();
-                this.checkAuthentication();
-            }
-
-            setupEventListeners() {
-                // Authentication
-                document.querySelectorAll('.auth-tab').forEach(tab => {
-                    tab.addEventListener('click', () => this.switchAuthTab(tab.dataset.tab));
-                });
-
-                document.getElementById('loginForm').addEventListener('submit', (e) => this.handleLogin(e));
-                document.getElementById('registerForm').addEventListener('submit', (e) => this.handleRegister(e));
-                document.getElementById('logoutBtn').addEventListener('click', () => this.handleLogout());
-
-                // Chat
-                document.getElementById('sendButton').addEventListener('click', () => this.sendMessage());
-                document.getElementById('messageInput').addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        this.sendMessage();
+                addMessage(message, true);
+                userInput.value = '';
+                
+                // Имитация обработки нейросетью
+                setTimeout(() => {
+                    let response;
+                    
+                    if (isLearning && knowledgeBase.length > 0) {
+                        // Если идет обучение, используем базу знаний
+                        response = generateResponse(message);
+                    } else {
+                        // Стандартные ответы
+                        response = generateDefaultResponse(message);
                     }
-                });
-
-                document.getElementById('messageInput').addEventListener('input', this.autoResizeTextarea);
-                document.getElementById('newChatBtn').addEventListener('click', () => this.newChat());
-            }
-
-            autoResizeTextarea() {
-                this.style.height = 'auto';
-                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-            }
-
-            switchAuthTab(tab) {
-                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-                document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
-
-                document.getElementById('loginForm').style.display = tab === 'login' ? 'flex' : 'none';
-                document.getElementById('registerForm').style.display = tab === 'register' ? 'flex' : 'none';
-            }
-
-            async handleLogin(e) {
-                e.preventDefault();
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-
-                // Simulate authentication
-                this.currentUser = {
-                    id: 'user_' + Date.now(),
-                    username: email.split('@')[0],
-                    email: email,
-                    avatar: email[0].toUpperCase()
-                };
-
-                localStorage.setItem('lumenai_user', JSON.stringify(this.currentUser));
-                this.showMainApp();
-            }
-
-            async handleRegister(e) {
-                e.preventDefault();
-                const username = document.getElementById('registerUsername').value;
-                const email = document.getElementById('registerEmail').value;
-                const password = document.getElementById('registerPassword').value;
-                const confirmPassword = document.getElementById('registerConfirmPassword').value;
-
-                if (password !== confirmPassword) {
-                    alert('Passwords do not match!');
-                    return;
-                }
-
-                // Simulate registration
-                this.currentUser = {
-                    id: 'user_' + Date.now(),
-                    username: username,
-                    email: email,
-                    avatar: username[0].toUpperCase()
-                };
-
-                localStorage.setItem('lumenai_user', JSON.stringify(this.currentUser));
-                this.showMainApp();
-            }
-
-            handleLogout() {
-                localStorage.removeItem('lumenai_user');
-                this.currentUser = null;
-                this.showAuthScreen();
-            }
-
-            checkAuthentication() {
-                const savedUser = localStorage.getItem('lumenai_user');
-                if (savedUser) {
-                    this.currentUser = JSON.parse(savedUser);
-                    this.showMainApp();
-                } else {
-                    this.showAuthScreen();
-                }
-            }
-
-            showAuthScreen() {
-                document.getElementById('authContainer').style.display = 'flex';
-                document.getElementById('mainApp').style.display = 'none';
-            }
-
-            showMainApp() {
-                document.getElementById('authContainer').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'flex';
-                
-                this.updateUserInfo();
-                this.loadChatHistory();
-            }
-
-            updateUserInfo() {
-                if (this.currentUser) {
-                    document.getElementById('userName').textContent = this.currentUser.username;
-                    document.getElementById('userAvatar').textContent = this.currentUser.avatar;
-                }
-            }
-
-            async sendMessage() {
-                const messageInput = document.getElementById('messageInput');
-                const message = messageInput.value.trim();
-                
-                if (!message || this.isProcessing) return;
-
-                // Remove welcome message on first message
-                const welcomeMessage = document.querySelector('.welcome-message');
-                if (welcomeMessage) {
-                    welcomeMessage.remove();
-                }
-
-                // Add user message
-                this.addMessage(message, 'user');
-                messageInput.value = '';
-                this.autoResizeTextarea.call(messageInput);
-                
-                // Show typing indicator
-                this.showTypingIndicator();
-                this.isProcessing = true;
-                this.updateSendButton();
-
-                try {
-                    const response = await this.callAIAPI(message);
-                    this.addMessage(response, 'ai');
-                } catch (error) {
-                    console.error('Error:', error);
-                    this.addMessage('Sorry, there was an error processing your request. Please try again.', 'ai');
-                }
-
-                this.hideTypingIndicator();
-                this.isProcessing = false;
-                this.updateSendButton();
-            }
-
-            async callAIAPI(userMessage) {
-                const response = await fetch(`${AI_API_CONFIG.apiUrl}?key=${AI_API_CONFIG.apiKey}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{
-                                text: userMessage
-                            }]
-                        }],
-                        generationConfig: {
-                            temperature: 0.7,
-                            topK: 40,
-                            topP: 0.95,
-                            maxOutputTokens: 1024,
-                        }
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                
-                if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-                    throw new Error('Invalid response format from AI API');
-                }
-                
-                return data.candidates[0].content.parts[0].text;
-            }
-
-            addMessage(content, role) {
-                const message = {
-                    id: Date.now(),
-                    role: role,
-                    content: content,
-                    timestamp: new Date().toLocaleTimeString()
-                };
-
-                this.conversationHistory.push(message);
-                this.displayMessage(message);
-                this.saveChatHistory();
-            }
-
-            displayMessage(message) {
-                const messagesContainer = document.getElementById('messagesContainer');
-                const messageElement = document.createElement('div');
-                messageElement.className = `message ${message.role}-message`;
-                
-                const headerText = message.role === 'user' ? 'You' : '<i class="fas fa-robot"></i> LumenAI';
-                
-                messageElement.innerHTML = `
-                    <div class="message-header">${headerText}</div>
-                    <div class="message-content">${this.formatMessage(message.content)}</div>
-                    <div class="message-time">${message.timestamp}</div>
-                `;
-
-                messagesContainer.appendChild(messageElement);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-
-            formatMessage(content) {
-                return content.replace(/\n/g, '<br>');
-            }
-
-            showTypingIndicator() {
-                document.getElementById('typingIndicator').style.display = 'flex';
-                document.getElementById('messagesContainer').scrollTop = document.getElementById('messagesContainer').scrollHeight;
-            }
-
-            hideTypingIndicator() {
-                document.getElementById('typingIndicator').style.display = 'none';
-            }
-
-            newChat() {
-                this.conversationHistory = [];
-                this.currentChatId = this.generateChatId();
-                document.getElementById('messagesContainer').innerHTML = '<div class="welcome-message"><h3>Welcome to LumenAI! 🚀</h3><p>I\'m your AI assistant powered by advanced language models. Ask me anything!</p></div>';
-                this.updateChatHistory();
-            }
-
-            generateChatId() {
-                return 'chat_' + Date.now();
-            }
-
-            saveChatHistory() {
-                if (!this.currentUser) return;
-
-                const chatData = {
-                    id: this.currentChatId,
-                    title: this.conversationHistory[0]?.content.substring(0, 30) + '...' || 'New Chat',
-                    messages: this.conversationHistory,
-                    timestamp: Date.now()
-                };
-                
-                let userChats = JSON.parse(localStorage.getItem(`lumenai_chats_${this.currentUser.id}`) || '[]');
-                const existingIndex = userChats.findIndex(chat => chat.id === this.currentChatId);
-                
-                if (existingIndex !== -1) {
-                    userChats[existingIndex] = chatData;
-                } else {
-                    userChats.push(chatData);
-                }
-                
-                localStorage.setItem(`lumenai_chats_${this.currentUser.id}`, JSON.stringify(userChats));
-                this.updateChatHistory();
-            }
-
-            loadChatHistory() {
-                if (!this.currentUser) return;
-
-                const userChats = JSON.parse(localStorage.getItem(`lumenai_chats_${this.currentUser.id}`) || '[]');
-                this.updateChatHistory();
-            }
-
-            updateChatHistory() {
-                const chatHistory = document.getElementById('chatHistory');
-                if (!this.currentUser) return;
-
-                const userChats = JSON.parse(localStorage.getItem(`lumenai_chats_${this.currentUser.id}`) || '[]');
-                
-                chatHistory.innerHTML = userChats.map(chat => `
-                    <div class="history-item ${chat.id === this.currentChatId ? 'active' : ''}" 
-                         onclick="lumenAI.loadChat('${chat.id}')">
-                        <div class="history-title">${chat.title}</div>
-                        <div class="history-preview">${new Date(chat.timestamp).toLocaleDateString()}</div>
-                    </div>
-                `).join('') || '<div style="text-align: center; color: var(--text-secondary); padding: 20px;">No chat history</div>';
-            }
-
-            loadChat(chatId) {
-                if (!this.currentUser) return;
-
-                const userChats = JSON.parse(localStorage.getItem(`lumenai_chats_${this.currentUser.id}`) || '[]');
-                const chat = userChats.find(c => c.id === chatId);
-                
-                if (chat) {
-                    this.currentChatId = chatId;
-                    this.conversationHistory = chat.messages;
                     
-                    const messagesContainer = document.getElementById('messagesContainer');
-                    messagesContainer.innerHTML = '';
-                    this.conversationHistory.forEach(msg => this.displayMessage(msg));
-                    
-                    this.updateChatHistory();
+                    addMessage(response, false);
+                }, 1000);
+            }
+            
+            // Функция для генерации ответа на основе знаний
+            function generateResponse(message) {
+                const lowerMessage = message.toLowerCase();
+                
+                // Проверяем, есть ли в базе знаний подходящий ответ
+                for (const item of knowledgeBase) {
+                    if (lowerMessage.includes(item.keyword.toLowerCase())) {
+                        return item.response;
+                    }
+                }
+                
+                // Если не нашли подходящего ответа, генерируем общий
+                return "Я еще не знаю ответ на этот вопрос. Можете предоставить информацию по этой теме для моего обучения?";
+            }
+            
+            // Функция для генерации стандартных ответов
+            function generateDefaultResponse(message) {
+                const lowerMessage = message.toLowerCase();
+                
+                if (lowerMessage.includes('привет') || lowerMessage.includes('здравствуй')) {
+                    return "Привет! Рад общению с вами. Чем могу помочь в обучении?";
+                } else if (lowerMessage.includes('обучение') || lowerMessage.includes('учить')) {
+                    return "Для начала обучения активируйте режим обучения и предоставьте мне учебные материалы.";
+                } else if (lowerMessage.includes('математика') || lowerMessage.includes('математик')) {
+                    return "Математика - это фундаментальная наука о структурах, порядке и отношениях. Я могу помочь с алгеброй, геометрией, анализом и другими разделами.";
+                } else if (lowerMessage.includes('программирование') || lowerMessage.includes('код')) {
+                    return "Программирование - это процесс создания компьютерных программ. Я могу помочь с основами алгоритмов, синтаксисом языков и решением задач.";
+                } else if (lowerMessage.includes('физика')) {
+                    return "Физика изучает фундаментальные законы природы. Я могу помочь с механикой, термодинамикой, электромагнетизмом и другими разделами.";
+                } else {
+                    return "Интересный вопрос! Я еще обучаюсь и совершенствую свои знания. Можете предоставить дополнительную информацию по этой теме?";
                 }
             }
-
-            updateSendButton() {
-                const sendButton = document.getElementById('sendButton');
-                const messageInput = document.getElementById('messageInput');
-                
-                sendButton.disabled = this.isProcessing || !messageInput.value.trim();
+            
+            // Функция для начала обучения
+            function startLearningMode() {
+                isLearning = true;
+                statusIndicator.classList.remove('status-inactive');
+                statusIndicator.classList.add('status-active');
+                statusText.textContent = 'Обучение активно - добавляйте учебные материалы';
+                addMessage('Режим обучения активирован. Теперь я буду запоминать предоставленную информацию и использовать ее для ответов.', false);
             }
-        }
-
-        // Initialize application
-        let lumenAI;
-        document.addEventListener('DOMContentLoaded', () => {
-            lumenAI = new LumenAI();
+            
+            // Функция для сброса знаний
+            function resetKnowledge() {
+                knowledgeBase = [];
+                isLearning = false;
+                statusIndicator.classList.remove('status-active');
+                statusIndicator.classList.add('status-inactive');
+                statusText.textContent = 'Обучение неактивно - знания сброшены';
+                addMessage('Все ранее изученные материалы удалены. Я готов к новому обучению.', false);
+            }
+            
+            // Обработчики событий
+            sendButton.addEventListener('click', handleSendMessage);
+            
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleSendMessage();
+                }
+            });
+            
+            startLearningBtn.addEventListener('click', startLearningMode);
+            
+            resetLearningBtn.addEventListener('click', resetKnowledge);
+            
+            // Имитация процесса обучения при вводе определенных фраз
+            userInput.addEventListener('input', function() {
+                if (isLearning && userInput.value.toLowerCase().includes('это означает')) {
+                    // Простая имитация извлечения знаний из текста
+                    const text = userInput.value;
+                    const parts = text.split('это означает');
+                    
+                    if (parts.length === 2) {
+                        const keyword = parts[0].trim();
+                        const explanation = parts[1].trim();
+                        
+                        // Добавляем в базу знаний
+                        knowledgeBase.push({
+                            keyword: keyword,
+                            response: explanation
+                        });
+                        
+                        // Показываем подтверждение
+                        setTimeout(() => {
+                            addMessage(`Запомнил: "${keyword}" - ${explanation}`, false);
+                        }, 500);
+                    }
+                }
+            });
         });
     </script>
 </body>
