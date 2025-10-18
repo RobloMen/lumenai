@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LumenAI | AI Ассистент</title>
+    <title>LumenAI | Premium AI Assistant</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -19,8 +19,9 @@
             --success: #00ff95;
             --warning: #ffb800;
             --error: #ff4757;
-            --user-msg: #1e3a8a;
-            --ai-msg: #1e1e40;
+            --user-msg: rgba(0, 245, 255, 0.15);
+            --ai-msg: rgba(30, 30, 64, 0.8);
+            --premium-gold: #ffd700;
         }
 
         * {
@@ -35,26 +36,67 @@
             color: var(--text);
             line-height: 1.6;
             min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .neon-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 245, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 229, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(0, 255, 149, 0.05) 0%, transparent 50%);
+            z-index: -2;
         }
 
         .app {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
-            height: 100vh;
+            min-height: 100vh;
+        }
+
+        /* Auth Screens */
+        .auth-container {
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
         }
 
-        /* Header */
-        .header {
+        .auth-box {
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 480px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .auth-logo {
             text-align: center;
-            padding: 20px 0;
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
         }
 
-        .logo {
+        .auth-logo .logo {
             font-size: 2.5rem;
             font-weight: 800;
             background: linear-gradient(45deg, var(--primary), var(--secondary));
@@ -63,74 +105,155 @@
             margin-bottom: 10px;
         }
 
-        .tagline {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-        }
-
-        /* API Settings */
-        .api-settings {
-            background: var(--surface);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .api-input-group {
+        .auth-tabs {
             display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .api-input {
-            flex: 1;
             background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 12px 15px;
-            color: var(--text);
-            font-size: 1rem;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 30px;
         }
 
-        .api-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .save-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
             cursor: pointer;
+            transition: all 0.3s ease;
             font-weight: 600;
         }
 
-        /* Main Chat Area */
+        .auth-tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.1);
+        }
+
+        .auth-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 245, 255, 0.3);
+        }
+
+        /* Main App */
+        .main-app {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Chat Container */
         .chat-container {
             flex: 1;
             display: flex;
             gap: 20px;
-            height: calc(100vh - 200px);
-        }
-
-        @media (max-width: 768px) {
-            .chat-container {
-                flex-direction: column;
-            }
+            height: calc(100vh - 140px);
         }
 
         /* Sidebar */
         .sidebar {
-            width: 300px;
+            width: 320px;
             background: var(--surface);
             border-radius: 20px;
             padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .new-chat-btn {
@@ -158,7 +281,7 @@
         }
 
         .history-item {
-            padding: 12px;
+            padding: 12px 15px;
             border-radius: 10px;
             margin-bottom: 8px;
             cursor: pointer;
@@ -176,6 +299,17 @@
             border-color: var(--primary);
         }
 
+        .history-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .history-preview {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
         /* Chat Area */
         .chat-area {
             flex: 1;
@@ -184,6 +318,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .messages-container {
@@ -199,9 +334,10 @@
             max-width: 80%;
             padding: 15px 20px;
             border-radius: 18px;
-            line-height: 1.5;
+            line-height: 1.6;
             position: relative;
             animation: fadeIn 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         @keyframes fadeIn {
@@ -218,8 +354,16 @@
         .ai-message {
             align-self: flex-start;
             background: var(--ai-msg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
             border-bottom-left-radius: 5px;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
 
         .message-content {
@@ -227,10 +371,11 @@
         }
 
         .message-time {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: var(--text-secondary);
-            margin-top: 5px;
+            margin-top: 8px;
             text-align: right;
+            opacity: 0.7;
         }
 
         /* Input Area */
@@ -242,7 +387,7 @@
 
         .input-container {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             align-items: end;
         }
 
@@ -258,11 +403,13 @@
             min-height: 60px;
             max-height: 120px;
             font-family: inherit;
+            transition: all 0.3s ease;
         }
 
         .message-input:focus {
             outline: none;
             border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.1);
         }
 
         .send-btn {
@@ -277,6 +424,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
+            font-size: 1.1rem;
         }
 
         .send-btn:hover {
@@ -290,17 +438,18 @@
             transform: none;
         }
 
-        /* Loading */
+        /* Typing Indicator */
         .typing-indicator {
             display: none;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             padding: 15px 20px;
             background: var(--ai-msg);
             border-radius: 18px;
             align-self: flex-start;
             border-bottom-left-radius: 5px;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 10px 0;
         }
 
         .typing-dots {
@@ -324,50 +473,138 @@
             30% { transform: translateY(-5px); }
         }
 
-        /* Status */
-        .status {
-            text-align: center;
-            padding: 10px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
+        /* API Status */
+        .api-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--surface);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .connected { color: var(--success); }
-        .error { color: var(--error); }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected { background: var(--success); }
+        .status-dot.error { background: var(--error); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Premium Badge */
+        .premium-badge {
+            background: linear-gradient(135deg, var(--premium-gold), #ff6b00);
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
-    <div class="app">
-        <header class="header">
+    <div class="neon-bg"></div>
+    
+    <!-- Authentication Screen -->
+    <div class="auth-container" id="authContainer">
+        <div class="auth-box">
+            <div class="auth-logo">
+                <div class="logo">
+                    <i class="fas fa-brain-circuit"></i>
+                    LumenAI
+                </div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                    Премиум AI ассистент
+                </div>
+            </div>
+
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Вход</div>
+                <div class="auth-tab" data-tab="register">Регистрация</div>
+            </div>
+
+            <form class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="auth-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Войти в LumenAI
+                </button>
+            </form>
+
+            <form class="auth-form" id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">Имя пользователя</label>
+                    <input type="text" class="form-input" id="registerUsername" placeholder="username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="registerEmail" placeholder="your@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" class="form-input" id="registerPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Подтвердите пароль</label>
+                    <input type="password" class="form-input" id="registerConfirmPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="auth-btn">
+                    <i class="fas fa-user-plus"></i>
+                    Создать аккаунт
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="main-app" id="mainApp">
+        <!-- API Status -->
+        <div class="api-status">
+            <div class="status-dot" id="apiStatusDot"></div>
+            <span id="apiStatusText">Gemini API Connected</span>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
             <div class="logo">
                 <i class="fas fa-brain-circuit"></i>
                 LumenAI
             </div>
-            <div class="tagline">Продвинутый AI ассистент</div>
-        </header>
-
-        <!-- Настройки API -->
-        <div class="api-settings">
-            <div class="api-input-group">
-                <input 
-                    type="password" 
-                    class="api-input" 
-                    id="apiKeyInput" 
-                    placeholder="Введите ваш API ключ OpenAI здесь..."
-                >
-                <button class="save-btn" id="saveApiKey">
-                    <i class="fas fa-save"></i>
-                    Сохранить
+            <div class="user-menu">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span id="userName">User</span>
+                <span class="premium-badge">PREMIUM</span>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Выйти
                 </button>
-            </div>
-            <div class="status" id="apiStatus">
-                API ключ не установлен
             </div>
         </div>
 
-        <!-- Основной чат -->
+        <!-- Chat Interface -->
         <div class="chat-container">
-            <!-- Боковая панель -->
+            <!-- Sidebar -->
             <div class="sidebar">
                 <button class="new-chat-btn" id="newChatBtn">
                     <i class="fas fa-plus"></i>
@@ -378,32 +615,32 @@
                 </div>
             </div>
 
-            <!-- Область сообщений -->
+            <!-- Chat Area -->
             <div class="chat-area">
                 <div class="messages-container" id="messagesContainer">
                     <!-- Сообщения будут здесь -->
                 </div>
 
-                <!-- Индикатор набора -->
+                <!-- Typing Indicator -->
                 <div class="typing-indicator" id="typingIndicator">
                     <div class="typing-dots">
                         <div class="typing-dot"></div>
                         <div class="typing-dot"></div>
                         <div class="typing-dot"></div>
                     </div>
-                    <span>LumenAI печатает...</span>
+                    <span>LumenAI генерирует ответ...</span>
                 </div>
 
-                <!-- Поле ввода -->
+                <!-- Input Area -->
                 <div class="input-area">
                     <div class="input-container">
                         <textarea 
                             class="message-input" 
                             id="messageInput" 
-                            placeholder="Введите ваше сообщение..."
+                            placeholder="Задайте вопрос LumenAI..."
                             rows="1"
                         ></textarea>
-                        <button class="send-btn" id="sendButton" disabled>
+                        <button class="send-btn" id="sendButton">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
@@ -413,9 +650,15 @@
     </div>
 
     <script>
+        // Конфигурация Gemini API
+        const GEMINI_API_CONFIG = {
+            apiKey: "AIzaSyDZhU8prBy8ECBPVSS94V_KKPydT9DRqeU", // Замените на ваш реальный Gemini API ключ
+            apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+        };
+
         class LumenAI {
             constructor() {
-                this.apiKey = '';
+                this.currentUser = null;
                 this.conversationHistory = [];
                 this.currentChatId = this.generateChatId();
                 this.isProcessing = false;
@@ -424,19 +667,22 @@
             }
 
             init() {
-                this.loadApiKey();
                 this.setupEventListeners();
-                this.updateUI();
+                this.checkAuthentication();
+                this.updateAPIStatus();
             }
 
             setupEventListeners() {
-                // Сохранение API ключа
-                document.getElementById('saveApiKey').addEventListener('click', () => this.saveApiKey());
-                document.getElementById('apiKeyInput').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.saveApiKey();
+                // Аутентификация
+                document.querySelectorAll('.auth-tab').forEach(tab => {
+                    tab.addEventListener('click', () => this.switchAuthTab(tab.dataset.tab));
                 });
 
-                // Отправка сообщения
+                document.getElementById('loginForm').addEventListener('submit', (e) => this.handleLogin(e));
+                document.getElementById('registerForm').addEventListener('submit', (e) => this.handleRegister(e));
+                document.getElementById('logoutBtn').addEventListener('click', () => this.handleLogout());
+
+                // Чат
                 document.getElementById('sendButton').addEventListener('click', () => this.sendMessage());
                 document.getElementById('messageInput').addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -445,10 +691,7 @@
                     }
                 });
 
-                // Автоматическое изменение высоты textarea
                 document.getElementById('messageInput').addEventListener('input', this.autoResizeTextarea);
-
-                // Новый чат
                 document.getElementById('newChatBtn').addEventListener('click', () => this.newChat());
             }
 
@@ -457,25 +700,88 @@
                 this.style.height = Math.min(this.scrollHeight, 120) + 'px';
             }
 
-            saveApiKey() {
-                const apiKeyInput = document.getElementById('apiKeyInput');
-                this.apiKey = apiKeyInput.value.trim();
-                
-                if (this.apiKey) {
-                    localStorage.setItem('lumenai_api_key', this.apiKey);
-                    this.updateApiStatus('API ключ сохранен', 'connected');
-                    this.updateUI();
+            switchAuthTab(tab) {
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+                document.getElementById('loginForm').style.display = tab === 'login' ? 'flex' : 'none';
+                document.getElementById('registerForm').style.display = tab === 'register' ? 'flex' : 'none';
+            }
+
+            async handleLogin(e) {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+
+                // Симуляция аутентификации
+                this.currentUser = {
+                    id: 'user_' + Date.now(),
+                    username: email.split('@')[0],
+                    email: email,
+                    avatar: email[0].toUpperCase()
+                };
+
+                localStorage.setItem('lumenai_user', JSON.stringify(this.currentUser));
+                this.showMainApp();
+            }
+
+            async handleRegister(e) {
+                e.preventDefault();
+                const username = document.getElementById('registerUsername').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+                if (password !== confirmPassword) {
+                    alert('Пароли не совпадают!');
+                    return;
+                }
+
+                // Симуляция регистрации
+                this.currentUser = {
+                    id: 'user_' + Date.now(),
+                    username: username,
+                    email: email,
+                    avatar: username[0].toUpperCase()
+                };
+
+                localStorage.setItem('lumenai_user', JSON.stringify(this.currentUser));
+                this.showMainApp();
+            }
+
+            handleLogout() {
+                localStorage.removeItem('lumenai_user');
+                this.currentUser = null;
+                this.showAuthScreen();
+            }
+
+            checkAuthentication() {
+                const savedUser = localStorage.getItem('lumenai_user');
+                if (savedUser) {
+                    this.currentUser = JSON.parse(savedUser);
+                    this.showMainApp();
                 } else {
-                    this.updateApiStatus('Введите API ключ', 'error');
+                    this.showAuthScreen();
                 }
             }
 
-            loadApiKey() {
-                const savedKey = localStorage.getItem('lumenai_api_key');
-                if (savedKey) {
-                    this.apiKey = savedKey;
-                    document.getElementById('apiKeyInput').value = savedKey;
-                    this.updateApiStatus('API ключ загружен', 'connected');
+            showAuthScreen() {
+                document.getElementById('authContainer').style.display = 'flex';
+                document.getElementById('mainApp').style.display = 'none';
+            }
+
+            showMainApp() {
+                document.getElementById('authContainer').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'flex';
+                
+                this.updateUserInfo();
+                this.loadChatHistory();
+            }
+
+            updateUserInfo() {
+                if (this.currentUser) {
+                    document.getElementById('userName').textContent = this.currentUser.username;
+                    document.getElementById('userAvatar').textContent = this.currentUser.avatar;
                 }
             }
 
@@ -483,7 +789,7 @@
                 const messageInput = document.getElementById('messageInput');
                 const message = messageInput.value.trim();
                 
-                if (!message || this.isProcessing || !this.apiKey) return;
+                if (!message || this.isProcessing) return;
 
                 // Добавляем сообщение пользователя
                 this.addMessage(message, 'user');
@@ -493,37 +799,37 @@
                 // Показываем индикатор набора
                 this.showTypingIndicator();
                 this.isProcessing = true;
-                this.updateUI();
+                this.updateSendButton();
 
                 try {
-                    // ВАШ КОД ДЛЯ ИНТЕГРАЦИИ С OPENAI API ЗДЕСЬ
-                    const response = await this.callOpenAIAPI(message);
+                    const response = await this.callGeminiAPI(message);
                     this.addMessage(response, 'ai');
                 } catch (error) {
                     console.error('Ошибка:', error);
-                    this.addMessage('Извините, произошла ошибка при обработке запроса.', 'ai');
+                    this.addMessage('Извините, произошла ошибка при обработке запроса. Пожалуйста, проверьте ваш API ключ.', 'ai');
                 }
 
                 this.hideTypingIndicator();
                 this.isProcessing = false;
-                this.updateUI();
+                this.updateSendButton();
             }
 
-            async callOpenAIAPI(userMessage) {
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            async callGeminiAPI(userMessage) {
+                if (!GEMINI_API_CONFIG.apiKey || GEMINI_API_CONFIG.apiKey === "AIzaSyD5j1d9J8z3q4Q6wX7yZ8b9c0d1e2f3g4h5") {
+                    throw new Error('Пожалуйста, установите ваш реальный Gemini API ключ в конфигурации');
+                }
+
+                const response = await fetch(`${GEMINI_API_CONFIG.apiUrl}?key=${GEMINI_API_CONFIG.apiKey}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${this.apiKey}`
                     },
                     body: JSON.stringify({
-                        model: 'gpt-3.5-turbo',
-                        messages: [
-                            ...this.conversationHistory,
-                            { role: 'user', content: userMessage }
-                        ],
-                        max_tokens: 1000,
-                        temperature: 0.7
+                        contents: [{
+                            parts: [{
+                                text: userMessage
+                            }]
+                        }]
                     })
                 });
 
@@ -532,10 +838,7 @@
                 }
 
                 const data = await response.json();
-                return data.choices[0].message.content;
-
-                // Временная заглушка - замените на реальный код выше
-                return `Это ответ от AI. Ваше сообщение: "${userMessage}"\n\nДля реальной работы замените код в методе callOpenAIAPI() на интеграцию с OpenAI API.`;
+                return data.candidates[0].content.parts[0].text;
             }
 
             addMessage(content, role) {
@@ -556,7 +859,10 @@
                 const messageElement = document.createElement('div');
                 messageElement.className = `message ${message.role}-message`;
                 
+                const headerText = message.role === 'user' ? 'Вы' : '<i class="fas fa-robot"></i> LumenAI';
+                
                 messageElement.innerHTML = `
+                    <div class="message-header">${headerText}</div>
                     <div class="message-content">${this.formatMessage(message.content)}</div>
                     <div class="message-time">${message.timestamp}</div>
                 `;
@@ -566,7 +872,6 @@
             }
 
             formatMessage(content) {
-                // Простое форматирование текста
                 return content.replace(/\n/g, '<br>');
             }
 
@@ -583,7 +888,7 @@
                 this.conversationHistory = [];
                 this.currentChatId = this.generateChatId();
                 document.getElementById('messagesContainer').innerHTML = '';
-                this.updateUI();
+                this.updateChatHistory();
             }
 
             generateChatId() {
@@ -591,6 +896,8 @@
             }
 
             saveChatHistory() {
+                if (!this.currentUser) return;
+
                 const chatData = {
                     id: this.currentChatId,
                     title: this.conversationHistory[0]?.content.substring(0, 30) + '...' || 'Новый чат',
@@ -598,41 +905,51 @@
                     timestamp: Date.now()
                 };
                 
-                let chats = JSON.parse(localStorage.getItem('lumenai_chats') || '[]');
-                const existingIndex = chats.findIndex(chat => chat.id === this.currentChatId);
+                let userChats = JSON.parse(localStorage.getItem(`lumenai_chats_${this.currentUser.id}`) || '[]');
+                const existingIndex = userChats.findIndex(chat => chat.id === this.currentChatId);
                 
                 if (existingIndex !== -1) {
-                    chats[existingIndex] = chatData;
+                    userChats[existingIndex] = chatData;
                 } else {
-                    chats.push(chatData);
+                    userChats.push(chatData);
                 }
                 
-                localStorage.setItem('lumenai_chats', JSON.stringify(chats));
+                localStorage.setItem(`lumenai_chats_${this.currentUser.id}`, JSON.stringify(userChats));
+                this.updateChatHistory();
+            }
+
+            loadChatHistory() {
+                if (!this.currentUser) return;
+
+                const userChats = JSON.parse(localStorage.getItem(`lumenai_chats_${this.currentUser.id}`) || '[]');
                 this.updateChatHistory();
             }
 
             updateChatHistory() {
                 const chatHistory = document.getElementById('chatHistory');
-                const chats = JSON.parse(localStorage.getItem('lumenai_chats') || '[]');
+                if (!this.currentUser) return;
+
+                const userChats = JSON.parse(localStorage.getItem(`lumenai_chats_${this.currentUser.id}`) || '[]');
                 
-                chatHistory.innerHTML = chats.map(chat => `
+                chatHistory.innerHTML = userChats.map(chat => `
                     <div class="history-item ${chat.id === this.currentChatId ? 'active' : ''}" 
                          onclick="lumenAI.loadChat('${chat.id}')">
-                        <div><strong>${chat.title}</strong></div>
-                        <small>${new Date(chat.timestamp).toLocaleDateString()}</small>
+                        <div class="history-title">${chat.title}</div>
+                        <div class="history-preview">${new Date(chat.timestamp).toLocaleDateString()}</div>
                     </div>
-                `).join('');
+                `).join('') || '<div style="text-align: center; color: var(--text-secondary); padding: 20px;">Нет истории чатов</div>';
             }
 
             loadChat(chatId) {
-                const chats = JSON.parse(localStorage.getItem('lumenai_chats') || '[]');
-                const chat = chats.find(c => c.id === chatId);
+                if (!this.currentUser) return;
+
+                const userChats = JSON.parse(localStorage.getItem(`lumenai_chats_${this.currentUser.id}`) || '[]');
+                const chat = userChats.find(c => c.id === chatId);
                 
                 if (chat) {
                     this.currentChatId = chatId;
                     this.conversationHistory = chat.messages;
                     
-                    // Очищаем и перерисовываем сообщения
                     const messagesContainer = document.getElementById('messagesContainer');
                     messagesContainer.innerHTML = '';
                     this.conversationHistory.forEach(msg => this.displayMessage(msg));
@@ -641,17 +958,24 @@
                 }
             }
 
-            updateApiStatus(message, type) {
-                const statusElement = document.getElementById('apiStatus');
-                statusElement.textContent = message;
-                statusElement.className = `status ${type}`;
+            updateAPIStatus() {
+                const statusDot = document.getElementById('apiStatusDot');
+                const statusText = document.getElementById('apiStatusText');
+
+                if (GEMINI_API_CONFIG.apiKey && GEMINI_API_CONFIG.apiKey !== "AIzaSyD5j1d9J8z3q4Q6wX7yZ8b9c0d1e2f3g4h5") {
+                    statusDot.className = 'status-dot connected';
+                    statusText.textContent = 'Gemini API Connected';
+                } else {
+                    statusDot.className = 'status-dot error';
+                    statusText.textContent = 'API Key Required';
+                }
             }
 
-            updateUI() {
+            updateSendButton() {
                 const sendButton = document.getElementById('sendButton');
                 const messageInput = document.getElementById('messageInput');
                 
-                sendButton.disabled = this.isProcessing || !this.apiKey || !messageInput.value.trim();
+                sendButton.disabled = this.isProcessing || !messageInput.value.trim();
             }
         }
 
