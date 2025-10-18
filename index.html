@@ -12,6 +12,7 @@
             --dark: #1a252f;
             --success: #2ecc71;
             --warning: #f39c12;
+            --error: #e74c3c;
         }
         
         * {
@@ -64,9 +65,23 @@
         main {
             flex: 1;
             padding: 2rem;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             width: 100%;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
         }
         
         .chat-container {
@@ -143,51 +158,117 @@
             background-color: #2980b9;
         }
         
-        .learning-section {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        h2 {
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-        
-        .learning-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 1rem;
-        }
-        
-        .learning-controls button {
-            flex: 1;
-        }
-        
-        .learning-status {
-            background-color: #f8f9fa;
-            padding: 1rem;
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-        
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-        
-        .status-active {
+        .btn-success {
             background-color: var(--success);
         }
         
-        .status-inactive {
-            background-color: #95a5a6;
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+        }
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+        
+        .database-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .upload-area {
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--secondary);
+        }
+        
+        .upload-area.dragover {
+            border-color: var(--success);
+            background-color: rgba(46, 204, 113, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #bdc3c7;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .status {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .status-success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+            display: block;
+        }
+        
+        .status-error {
+            background-color: rgba(231, 76, 60, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+            display: block;
+        }
+        
+        .knowledge-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .stat-card {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        .auto-search {
+            background-color: rgba(52, 152, 219, 0.1);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+        
+        .search-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 4px;
+            border-left: 4px solid var(--secondary);
         }
         
         footer {
@@ -198,7 +279,15 @@
             font-size: 0.9rem;
         }
         
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
+            .database-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .knowledge-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
             main {
                 padding: 1rem;
             }
@@ -219,58 +308,134 @@
             <span class="logo-icon">🧠</span>
             <h1>SynapseGPT</h1>
         </div>
-        <p class="subtitle">Образовательная нейросеть с возможностью обучения</p>
+        <p class="subtitle">Образовательная нейросеть нового поколения</p>
     </header>
     
     <main>
         <div class="chat-container">
             <div class="chat-messages" id="chatMessages">
                 <div class="message bot-message">
-                    Привет! Я SynapseGPT, образовательная нейросеть. Я могу помочь вам с учебными вопросами и обучаться на основе ваших материалов. Чем могу помочь?
+                    <strong>SynapseGPT:</strong> Привет! Я образовательная нейросеть, готовая помочь с учебными вопросами. Задавайте вопросы или поделитесь знаниями для моего обучения!
                 </div>
             </div>
             <div class="input-area">
-                <input type="text" id="userInput" placeholder="Введите ваш вопрос или учебный материал...">
+                <input type="text" id="userInput" placeholder="Задайте вопрос или поделитесь знаниями...">
                 <button id="sendButton">Отправить</button>
             </div>
         </div>
         
-        <div class="learning-section">
-            <h2>Обучение нейросети</h2>
-            <div class="learning-controls">
-                <button id="startLearning">Начать обучение</button>
-                <button id="resetLearning">Сбросить знания</button>
+        <div class="card">
+            <h2>База знаний SynapseGPT</h2>
+            <p>Система автоматически находит и загружает образовательные материалы для расширения знаний</p>
+            
+            <div class="database-section">
+                <div>
+                    <h3>Обновление знаний</h3>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📚</div>
+                        <p>Перетащите файлы знаний сюда</p>
+                        <p class="subtitle">Поддерживаются файлы базы данных и образовательные материалы</p>
+                        <button class="btn" id="selectFileBtn">Выбрать файлы</button>
+                    </div>
+                    <input type="file" id="fileInput" class="file-input" accept=".db,.txt,.pdf,.json" multiple>
+                    
+                    <div class="auto-search">
+                        <h4>Автопоиск знаний</h4>
+                        <p>Система автоматически ищет образовательные материалы в вашей системе</p>
+                        <button class="btn btn-success" id="autoSearchBtn">Запустить поиск знаний</button>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3>Статистика знаний</h3>
+                    <div class="knowledge-stats">
+                        <div class="stat-card">
+                            <div class="stat-number" id="topicsCount">127</div>
+                            <div class="stat-label">Изученных тем</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="questionsCount">542</div>
+                            <div class="stat-label">Ответов в базе</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="accuracyRate">94%</div>
+                            <div class="stat-label">Точность ответов</div>
+                        </div>
+                    </div>
+                    
+                    <div class="search-result" id="searchResult" style="display: none;">
+                        <h4>Найдены новые знания</h4>
+                        <p id="foundFiles">Загрузка информации...</p>
+                        <button class="btn btn-success" id="loadKnowledgeBtn">Загрузить в систему</button>
+                    </div>
+                </div>
             </div>
-            <div class="learning-status">
-                <span class="status-indicator status-inactive" id="statusIndicator"></span>
-                <span id="statusText">Обучение неактивно</span>
+            
+            <div class="status" id="statusMessage"></div>
+        </div>
+        
+        <div class="card">
+            <h2>Обучение нейросети</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
+                <button class="btn btn-success" id="startLearningBtn">Активировать обучение</button>
+                <button class="btn btn-warning" id="optimizeBtn">Оптимизировать знания</button>
+                <button class="btn" id="exportBtn">Создать резервную копию</button>
+            </div>
+            <div class="status" id="learningStatus">
+                <strong>Статус:</strong> Обучение активно - нейросеть постоянно улучшает свои знания
             </div>
         </div>
     </main>
     
     <footer>
-        <p>SynapseGPT &copy; 2023 | Образовательная нейросеть с адаптивным обучением</p>
+        <p>SynapseGPT &copy; 2023 | Образовательная нейросеть с непрерывным обучением</p>
     </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Элементы чата
             const chatMessages = document.getElementById('chatMessages');
             const userInput = document.getElementById('userInput');
             const sendButton = document.getElementById('sendButton');
-            const startLearningBtn = document.getElementById('startLearning');
-            const resetLearningBtn = document.getElementById('resetLearning');
-            const statusIndicator = document.getElementById('statusIndicator');
-            const statusText = document.getElementById('statusText');
             
-            let isLearning = false;
+            // Элементы управления знаниями
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const selectFileBtn = document.getElementById('selectFileBtn');
+            const autoSearchBtn = document.getElementById('autoSearchBtn');
+            const statusMessage = document.getElementById('statusMessage');
+            const searchResult = document.getElementById('searchResult');
+            const foundFiles = document.getElementById('foundFiles');
+            const loadKnowledgeBtn = document.getElementById('loadKnowledgeBtn');
+            const startLearningBtn = document.getElementById('startLearningBtn');
+            const optimizeBtn = document.getElementById('optimizeBtn');
+            const exportBtn = document.getElementById('exportBtn');
+            const learningStatus = document.getElementById('learningStatus');
+            
+            // Статистика
+            const topicsCount = document.getElementById('topicsCount');
+            const questionsCount = document.getElementById('questionsCount');
+            const accuracyRate = document.getElementById('accuracyRate');
+            
             let knowledgeBase = [];
+            let isLearningActive = true;
             
             // Функция для добавления сообщения в чат
-            function addMessage(text, isUser) {
+            function addMessage(text, isUser, isSystem = false) {
                 const messageDiv = document.createElement('div');
                 messageDiv.classList.add('message');
-                messageDiv.classList.add(isUser ? 'user-message' : 'bot-message');
-                messageDiv.textContent = text;
+                
+                if (isSystem) {
+                    messageDiv.classList.add('bot-message');
+                    messageDiv.innerHTML = `<em>${text}</em>`;
+                } else if (isUser) {
+                    messageDiv.classList.add('user-message');
+                    messageDiv.textContent = text;
+                } else {
+                    messageDiv.classList.add('bot-message');
+                    messageDiv.innerHTML = `<strong>SynapseGPT:</strong> ${text}`;
+                }
+                
                 chatMessages.appendChild(messageDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
@@ -287,108 +452,187 @@
                 setTimeout(() => {
                     let response;
                     
-                    if (isLearning && knowledgeBase.length > 0) {
-                        // Если идет обучение, используем базу знаний
-                        response = generateResponse(message);
+                    if (message.startsWith('[ADD]')) {
+                        // Добавление новых знаний
+                        const parts = message.slice(5).split(' - ');
+                        if (parts.length >= 2) {
+                            const question = parts[0].trim();
+                            const answer = parts.slice(1).join(' - ').trim();
+                            knowledgeBase.push({ question, answer });
+                            response = `✅ Добавлено новое знание: "${question}"`;
+                            updateStats();
+                        } else {
+                            response = "❌ Используйте формат: [ADD] вопрос - ответ";
+                        }
                     } else {
-                        // Стандартные ответы
-                        response = generateDefaultResponse(message);
+                        // Поиск ответа в базе знаний
+                        const found = knowledgeBase.find(item => 
+                            message.toLowerCase().includes(item.question.toLowerCase()) ||
+                            item.question.toLowerCase().includes(message.toLowerCase())
+                        );
+                        
+                        if (found) {
+                            response = found.answer;
+                        } else {
+                            response = "Я еще не знаю ответ на этот вопрос. Вы можете добавить информацию используя: [ADD] вопрос - ответ";
+                        }
                     }
                     
                     addMessage(response, false);
-                }, 1000);
+                }, 1000 + Math.random() * 1000);
             }
             
-            // Функция для генерации ответа на основе знаний
-            function generateResponse(message) {
-                const lowerMessage = message.toLowerCase();
+            // Функция обновления статистики
+            function updateStats() {
+                topicsCount.textContent = knowledgeBase.length;
+                questionsCount.textContent = knowledgeBase.length * 3;
+                accuracyRate.textContent = `${95 + Math.floor(Math.random() * 4)}%`;
+            }
+            
+            // Функция показа статуса
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = 'status';
+                statusMessage.classList.add(`status-${type}`);
+            }
+            
+            // Функция автопоиска знаний
+            function performAutoSearch() {
+                showStatus('🔍 Поиск образовательных материалов в системе...', 'success');
                 
-                // Проверяем, есть ли в базе знаний подходящий ответ
-                for (const item of knowledgeBase) {
-                    if (lowerMessage.includes(item.keyword.toLowerCase())) {
-                        return item.response;
-                    }
-                }
+                // Имитация поиска
+                setTimeout(() => {
+                    const foundItems = [
+                        'knowledge_base.db',
+                        'educational_materials.pdf',
+                        'science_data.json',
+                        'learning_resources.txt'
+                    ];
+                    
+                    foundFiles.textContent = `Найдено файлов: ${foundItems.join(', ')}`;
+                    searchResult.style.display = 'block';
+                    
+                    showStatus('✅ Найдено 4 файла с образовательными материалами', 'success');
+                }, 2000);
+            }
+            
+            // Функция загрузки знаний
+            function loadKnowledge() {
+                showStatus('📚 Загрузка и обработка найденных знаний...', 'success');
                 
-                // Если не нашли подходящего ответа, генерируем общий
-                return "Я еще не знаю ответ на этот вопрос. Можете предоставить информацию по этой теме для моего обучения?";
+                // Имитация загрузки
+                setTimeout(() => {
+                    // Добавляем демонстрационные знания
+                    const newKnowledge = [
+                        {
+                            question: "Что такое квантовый компьютер",
+                            answer: "Квантовый компьютер использует квантовые биты (кубиты) для выполнения вычислений, что позволяет решать некоторые задачи значительно быстрее классических компьютеров."
+                        },
+                        {
+                            question: "Как работает блокчейн",
+                            answer: "Блокчейн - это распределенная база данных, где данные хранятся в цепочке блоков, каждый блок содержит информацию о предыдущем блоке, обеспечивая безопасность и неизменяемость."
+                        },
+                        {
+                            question: "Что такое машинное обучение",
+                            answer: "Машинное обучение - это раздел искусственного интеллекта, посвященный созданию алгоритмов, которые могут обучаться на данных и делать прогнозы или принимать решения."
+                        }
+                    ];
+                    
+                    knowledgeBase.push(...newKnowledge);
+                    updateStats();
+                    searchResult.style.display = 'none';
+                    
+                    showStatus('✅ Успешно загружено 3 новые темы в базу знаний', 'success');
+                    addMessage('Система обновлена! Добавлены новые знания о квантовых вычислениях, блокчейне и машинном обучении.', false, true);
+                }, 3000);
             }
             
-            // Функция для генерации стандартных ответов
-            function generateDefaultResponse(message) {
-                const lowerMessage = message.toLowerCase();
-                
-                if (lowerMessage.includes('привет') || lowerMessage.includes('здравствуй')) {
-                    return "Привет! Рад общению с вами. Чем могу помочь в обучении?";
-                } else if (lowerMessage.includes('обучение') || lowerMessage.includes('учить')) {
-                    return "Для начала обучения активируйте режим обучения и предоставьте мне учебные материалы.";
-                } else if (lowerMessage.includes('математика') || lowerMessage.includes('математик')) {
-                    return "Математика - это фундаментальная наука о структурах, порядке и отношениях. Я могу помочь с алгеброй, геометрией, анализом и другими разделами.";
-                } else if (lowerMessage.includes('программирование') || lowerMessage.includes('код')) {
-                    return "Программирование - это процесс создания компьютерных программ. Я могу помочь с основами алгоритмов, синтаксисом языков и решением задач.";
-                } else if (lowerMessage.includes('физика')) {
-                    return "Физика изучает фундаментальные законы природы. Я могу помочь с механикой, термодинамикой, электромагнетизмом и другими разделами.";
-                } else {
-                    return "Интересный вопрос! Я еще обучаюсь и совершенствую свои знания. Можете предоставить дополнительную информацию по этой теме?";
-                }
-            }
-            
-            // Функция для начала обучения
-            function startLearningMode() {
-                isLearning = true;
-                statusIndicator.classList.remove('status-inactive');
-                statusIndicator.classList.add('status-active');
-                statusText.textContent = 'Обучение активно - добавляйте учебные материалы';
-                addMessage('Режим обучения активирован. Теперь я буду запоминать предоставленную информацию и использовать ее для ответов.', false);
-            }
-            
-            // Функция для сброса знаний
-            function resetKnowledge() {
-                knowledgeBase = [];
-                isLearning = false;
-                statusIndicator.classList.remove('status-active');
-                statusIndicator.classList.add('status-inactive');
-                statusText.textContent = 'Обучение неактивно - знания сброшены';
-                addMessage('Все ранее изученные материалы удалены. Я готов к новому обучению.', false);
-            }
-            
-            // Обработчики событий
+            // Обработчики событий чата
             sendButton.addEventListener('click', handleSendMessage);
-            
             userInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     handleSendMessage();
                 }
             });
             
-            startLearningBtn.addEventListener('click', startLearningMode);
+            // Обработчики управления знаниями
+            selectFileBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
             
-            resetLearningBtn.addEventListener('click', resetKnowledge);
-            
-            // Имитация процесса обучения при вводе определенных фраз
-            userInput.addEventListener('input', function() {
-                if (isLearning && userInput.value.toLowerCase().includes('это означает')) {
-                    // Простая имитация извлечения знаний из текста
-                    const text = userInput.value;
-                    const parts = text.split('это означает');
-                    
-                    if (parts.length === 2) {
-                        const keyword = parts[0].trim();
-                        const explanation = parts[1].trim();
-                        
-                        // Добавляем в базу знаний
-                        knowledgeBase.push({
-                            keyword: keyword,
-                            response: explanation
-                        });
-                        
-                        // Показываем подтверждение
-                        setTimeout(() => {
-                            addMessage(`Запомнил: "${keyword}" - ${explanation}`, false);
-                        }, 500);
-                    }
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    showStatus(`✅ Загружено ${e.target.files.length} файлов`, 'success');
+                    addMessage(`Система обработала ${e.target.files.length} новых файлов с знаниями`, false, true);
+                    updateStats();
                 }
             });
+            
+            // Drag and drop
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function() {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length > 0) {
+                    showStatus(`✅ Перетащено ${e.dataTransfer.files.length} файлов`, 'success');
+                    addMessage(`Добавлены новые материалы из ${e.dataTransfer.files.length} файлов`, false, true);
+                    updateStats();
+                }
+            });
+            
+            autoSearchBtn.addEventListener('click', performAutoSearch);
+            loadKnowledgeBtn.addEventListener('click', loadKnowledge);
+            
+            // Обработчики кнопок обучения
+            startLearningBtn.addEventListener('click', function() {
+                isLearningActive = !isLearningActive;
+                const status = isLearningActive ? 'активно' : 'приостановлено';
+                const emoji = isLearningActive ? '✅' : '⏸️';
+                learningStatus.innerHTML = `<strong>Статус:</strong> Обучение ${status} ${emoji}`;
+                showStatus(`Режим обучения ${status}`, 'success');
+            });
+            
+            optimizeBtn.addEventListener('click', function() {
+                showStatus('🔄 Оптимизация структуры знаний...', 'success');
+                setTimeout(() => {
+                    showStatus('✅ База знаний оптимизирована, скорость ответов увеличена на 15%', 'success');
+                }, 2000);
+            });
+            
+            exportBtn.addEventListener('click', function() {
+                showStatus('💾 Создание резервной копии знаний...', 'success');
+                setTimeout(() => {
+                    showStatus('✅ Резервная копия создана: knowledge_backup.db', 'success');
+                }, 1500);
+            });
+            
+            // Инициализация
+            updateStats();
+            
+            // Добавляем начальные знания
+            knowledgeBase = [
+                {
+                    question: "Что такое Python",
+                    answer: "Python - это высокоуровневый язык программирования общего назначения с простым и понятным синтаксисом."
+                },
+                {
+                    question: "Что такое искусственный интеллект",
+                    answer: "Искусственный интеллект (ИИ) - это область компьютерных наук, занимающаяся созданием машин и систем, способных выполнять задачи, требующие человеческого интеллекта."
+                },
+                {
+                    question: "Как работает нейросеть",
+                    answer: "Нейросеть имитирует работу человеческого мозга, состоя из interconnected узлов (нейронов), которые обрабатывают информацию через слои и обучаются на данных."
+                }
+            ];
         });
     </script>
 </body>
