@@ -514,6 +514,18 @@
             font-weight: 700;
             margin-left: 8px;
         }
+
+        /* Welcome Message */
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .welcome-message h3 {
+            margin-bottom: 10px;
+            color: var(--text);
+        }
     </style>
 </head>
 <body>
@@ -528,7 +540,7 @@
                     LumenAI
                 </div>
                 <div style="color: var(--text-secondary); font-size: 0.9rem;">
-                    Премиум AI ассистент
+                    Премиум AI ассистент с Gemini
                 </div>
             </div>
 
@@ -581,8 +593,8 @@
     <div class="main-app" id="mainApp">
         <!-- API Status -->
         <div class="api-status">
-            <div class="status-dot" id="apiStatusDot"></div>
-            <span id="apiStatusText">Gemini API Connected</span>
+            <div class="status-dot connected"></div>
+            <span>Gemini API Connected</span>
         </div>
 
         <!-- Header -->
@@ -618,7 +630,10 @@
             <!-- Chat Area -->
             <div class="chat-area">
                 <div class="messages-container" id="messagesContainer">
-                    <!-- Сообщения будут здесь -->
+                    <div class="welcome-message">
+                        <h3>Добро пожаловать в LumenAI! 🚀</h3>
+                        <p>Я ваш AI-ассистент на основе Gemini. Задайте мне любой вопрос!</p>
+                    </div>
                 </div>
 
                 <!-- Typing Indicator -->
@@ -650,9 +665,9 @@
     </div>
 
     <script>
-        // Конфигурация Gemini API
+        // Конфигурация Gemini API с вашим ключом
         const GEMINI_API_CONFIG = {
-            apiKey: "AIzaSyDZhU8prBy8ECBPVSS94V_KKPydT9DRqeU", // Замените на ваш реальный Gemini API ключ
+            apiKey: "AIzaSyDZhU8prBy8ECBPVSS94V_KKPydT9DRqeU",
             apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
         };
 
@@ -669,7 +684,6 @@
             init() {
                 this.setupEventListeners();
                 this.checkAuthentication();
-                this.updateAPIStatus();
             }
 
             setupEventListeners() {
@@ -791,6 +805,12 @@
                 
                 if (!message || this.isProcessing) return;
 
+                // Убираем welcome сообщение при первом сообщении
+                const welcomeMessage = document.querySelector('.welcome-message');
+                if (welcomeMessage) {
+                    welcomeMessage.remove();
+                }
+
                 // Добавляем сообщение пользователя
                 this.addMessage(message, 'user');
                 messageInput.value = '';
@@ -806,7 +826,7 @@
                     this.addMessage(response, 'ai');
                 } catch (error) {
                     console.error('Ошибка:', error);
-                    this.addMessage('Извините, произошла ошибка при обработке запроса. Пожалуйста, проверьте ваш API ключ.', 'ai');
+                    this.addMessage('Извините, произошла ошибка при обработке запроса: ' + error.message, 'ai');
                 }
 
                 this.hideTypingIndicator();
@@ -815,10 +835,6 @@
             }
 
             async callGeminiAPI(userMessage) {
-                if (!GEMINI_API_CONFIG.apiKey || GEMINI_API_CONFIG.apiKey === "AIzaSyD5j1d9J8z3q4Q6wX7yZ8b9c0d1e2f3g4h5") {
-                    throw new Error('Пожалуйста, установите ваш реальный Gemini API ключ в конфигурации');
-                }
-
                 const response = await fetch(`${GEMINI_API_CONFIG.apiUrl}?key=${GEMINI_API_CONFIG.apiKey}`, {
                     method: 'POST',
                     headers: {
@@ -829,15 +845,27 @@
                             parts: [{
                                 text: userMessage
                             }]
-                        }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            topK: 40,
+                            topP: 0.95,
+                            maxOutputTokens: 1024,
+                        }
                     })
                 });
 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
                 }
 
                 const data = await response.json();
+                
+                if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+                    throw new Error('Неверный формат ответа от Gemini API');
+                }
+                
                 return data.candidates[0].content.parts[0].text;
             }
 
@@ -887,7 +915,7 @@
             newChat() {
                 this.conversationHistory = [];
                 this.currentChatId = this.generateChatId();
-                document.getElementById('messagesContainer').innerHTML = '';
+                document.getElementById('messagesContainer').innerHTML = '<div class="welcome-message"><h3>Добро пожаловать в LumenAI! 🚀</h3><p>Я ваш AI-ассистент на основе Gemini. Задайте мне любой вопрос!</p></div>';
                 this.updateChatHistory();
             }
 
@@ -955,19 +983,6 @@
                     this.conversationHistory.forEach(msg => this.displayMessage(msg));
                     
                     this.updateChatHistory();
-                }
-            }
-
-            updateAPIStatus() {
-                const statusDot = document.getElementById('apiStatusDot');
-                const statusText = document.getElementById('apiStatusText');
-
-                if (GEMINI_API_CONFIG.apiKey && GEMINI_API_CONFIG.apiKey !== "AIzaSyD5j1d9J8z3q4Q6wX7yZ8b9c0d1e2f3g4h5") {
-                    statusDot.className = 'status-dot connected';
-                    statusText.textContent = 'Gemini API Connected';
-                } else {
-                    statusDot.className = 'status-dot error';
-                    statusText.textContent = 'API Key Required';
                 }
             }
 
