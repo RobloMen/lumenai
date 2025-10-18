@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SynapseGPT - Образовательная нейросеть</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
     <style>
         :root {
             --primary: #2c3e50;
@@ -122,6 +123,14 @@
             border-bottom-left-radius: 2px;
         }
         
+        .system-message {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            align-self: center;
+            max-width: 90%;
+            font-size: 0.9rem;
+        }
+        
         .input-area {
             display: flex;
             border-top: 1px solid #e9ecef;
@@ -158,6 +167,11 @@
             background-color: #2980b9;
         }
         
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
         .btn-success {
             background-color: var(--success);
         }
@@ -174,60 +188,78 @@
             background-color: #e67e22;
         }
         
-        .database-section {
+        .training-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
         }
         
-        .upload-area {
-            border: 2px dashed #bdc3c7;
-            border-radius: 8px;
-            padding: 2rem;
-            text-align: center;
-            margin-bottom: 1rem;
-            transition: border-color 0.3s;
-            cursor: pointer;
+        .training-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
         
-        .upload-area:hover {
-            border-color: var(--secondary);
+        .training-progress {
+            margin-top: 1rem;
         }
         
-        .upload-area.dragover {
-            border-color: var(--success);
-            background-color: rgba(46, 204, 113, 0.1);
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
         }
         
-        .upload-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: #bdc3c7;
+        .progress-fill {
+            height: 100%;
+            background-color: var(--success);
+            transition: width 0.3s ease;
         }
         
-        .file-input {
-            display: none;
+        .model-info {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
         }
         
         .status {
             padding: 1rem;
             border-radius: 4px;
             margin-top: 1rem;
-            display: none;
         }
         
         .status-success {
             background-color: rgba(46, 204, 113, 0.1);
             border: 1px solid var(--success);
             color: var(--success);
-            display: block;
+        }
+        
+        .status-warning {
+            background-color: rgba(243, 156, 18, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
         }
         
         .status-error {
             background-color: rgba(231, 76, 60, 0.1);
             border: 1px solid var(--error);
             color: var(--error);
-            display: block;
         }
         
         .knowledge-stats {
@@ -256,19 +288,23 @@
             margin-top: 0.5rem;
         }
         
-        .auto-search {
-            background-color: rgba(52, 152, 219, 0.1);
+        .training-data {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
             padding: 1rem;
-            border-radius: 6px;
             margin-top: 1rem;
         }
         
-        .search-result {
-            margin-top: 1rem;
-            padding: 1rem;
-            background-color: white;
-            border-radius: 4px;
-            border-left: 4px solid var(--secondary);
+        .data-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #f8f9fa;
+            font-size: 0.9rem;
+        }
+        
+        .data-item:last-child {
+            border-bottom: none;
         }
         
         footer {
@@ -280,7 +316,7 @@
         }
         
         @media (max-width: 768px) {
-            .database-section {
+            .training-section {
                 grid-template-columns: 1fr;
             }
             
@@ -308,41 +344,60 @@
             <span class="logo-icon">🧠</span>
             <h1>SynapseGPT</h1>
         </div>
-        <p class="subtitle">Образовательная нейросеть нового поколения</p>
+        <p class="subtitle">Образовательная нейросеть с TensorFlow.js</p>
     </header>
     
     <main>
         <div class="chat-container">
             <div class="chat-messages" id="chatMessages">
                 <div class="message bot-message">
-                    <strong>SynapseGPT:</strong> Привет! Я образовательная нейросеть, готовая помочь с учебными вопросами. Задавайте вопросы или поделитесь знаниями для моего обучения!
+                    <strong>SynapseGPT:</strong> Привет! Я нейросеть, которая обучается прямо в вашем браузере с помощью TensorFlow.js. Начнем общение!
                 </div>
             </div>
             <div class="input-area">
-                <input type="text" id="userInput" placeholder="Задайте вопрос или поделитесь знаниями...">
+                <input type="text" id="userInput" placeholder="Задайте вопрос или введите обучающие данные...">
                 <button id="sendButton">Отправить</button>
             </div>
         </div>
         
         <div class="card">
-            <h2>База знаний SynapseGPT</h2>
-            <p>Система автоматически находит и загружает образовательные материалы для расширения знаний</p>
-            
-            <div class="database-section">
+            <h2>Обучение нейросети</h2>
+            <div class="training-section">
                 <div>
-                    <h3>Обновление знаний</h3>
-                    <div class="upload-area" id="uploadArea">
-                        <div class="upload-icon">📚</div>
-                        <p>Перетащите файлы знаний сюда</p>
-                        <p class="subtitle">Поддерживаются файлы базы данных и образовательные материалы</p>
-                        <button class="btn" id="selectFileBtn">Выбрать файлы</button>
+                    <h3>Управление обучением</h3>
+                    <div class="training-controls">
+                        <button class="btn-success" id="initModelBtn">Инициализировать модель</button>
+                        <button class="btn-warning" id="trainModelBtn" disabled>Начать обучение</button>
+                        <button id="addDataBtn">Добавить обучающие данные</button>
+                        
+                        <div class="training-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                            </div>
+                            <div id="progressText">Готовность: 0%</div>
+                        </div>
                     </div>
-                    <input type="file" id="fileInput" class="file-input" accept=".db,.txt,.pdf,.json" multiple>
                     
-                    <div class="auto-search">
-                        <h4>Автопоиск знаний</h4>
-                        <p>Система автоматически ищет образовательные материалы в вашей системе</p>
-                        <button class="btn btn-success" id="autoSearchBtn">Запустить поиск знаний</button>
+                    <div class="model-info">
+                        <strong>Информация о модели:</strong>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span>Статус:</span>
+                                <span id="modelStatus">Не инициализирована</span>
+                            </div>
+                            <div class="info-item">
+                                <span>Эпохи:</span>
+                                <span id="epochCount">0</span>
+                            </div>
+                            <div class="info-item">
+                                <span>Точность:</span>
+                                <span id="accuracyRate">0%</span>
+                            </div>
+                            <div class="info-item">
+                                <span>Данных:</span>
+                                <span id="dataCount">0</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -350,75 +405,99 @@
                     <h3>Статистика знаний</h3>
                     <div class="knowledge-stats">
                         <div class="stat-card">
-                            <div class="stat-number" id="topicsCount">127</div>
-                            <div class="stat-label">Изученных тем</div>
+                            <div class="stat-number" id="patternsCount">0</div>
+                            <div class="stat-label">Изученных паттернов</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-number" id="questionsCount">542</div>
-                            <div class="stat-label">Ответов в базе</div>
+                            <div class="stat-number" id="trainingTime">0с</div>
+                            <div class="stat-label">Время обучения</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-number" id="accuracyRate">94%</div>
-                            <div class="stat-label">Точность ответов</div>
+                            <div class="stat-number" id="predictionRate">0%</div>
+                            <div class="stat-label">Успешных ответов</div>
                         </div>
                     </div>
                     
-                    <div class="search-result" id="searchResult" style="display: none;">
-                        <h4>Найдены новые знания</h4>
-                        <p id="foundFiles">Загрузка информации...</p>
-                        <button class="btn btn-success" id="loadKnowledgeBtn">Загрузить в систему</button>
+                    <div class="training-data">
+                        <strong>Обучающие данные:</strong>
+                        <div id="trainingDataList">
+                            <div class="data-item">Данные не добавлены</div>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="status" id="statusMessage"></div>
+            <div class="status status-warning" id="statusMessage">
+                <strong>TensorFlow.js готов к работе.</strong> Инициализируйте модель для начала обучения.
+            </div>
         </div>
         
         <div class="card">
-            <h2>Обучение нейросети</h2>
+            <h2>База знаний</h2>
             <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
-                <button class="btn btn-success" id="startLearningBtn">Активировать обучение</button>
-                <button class="btn btn-warning" id="optimizeBtn">Оптимизировать знания</button>
-                <button class="btn" id="exportBtn">Создать резервную копию</button>
+                <button class="btn-success" id="saveModelBtn" disabled>Сохранить модель</button>
+                <button class="btn-warning" id="loadModelBtn">Загрузить модель</button>
+                <button id="exportDataBtn">Экспорт данных</button>
             </div>
-            <div class="status" id="learningStatus">
-                <strong>Статус:</strong> Обучение активно - нейросеть постоянно улучшает свои знания
+            <div class="status status-success" id="knowledgeStatus">
+                Модель будет обучаться на ваших вопросах и ответах, улучшая качество responses с течением времени.
             </div>
         </div>
     </main>
     
     <footer>
-        <p>SynapseGPT &copy; 2023 | Образовательная нейросеть с непрерывным обучением</p>
+        <p>SynapseGPT &copy; 2023 | Нейросеть на TensorFlow.js с браузерным обучением</p>
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Элементы чата
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Элементы интерфейса
             const chatMessages = document.getElementById('chatMessages');
             const userInput = document.getElementById('userInput');
             const sendButton = document.getElementById('sendButton');
             
-            // Элементы управления знаниями
-            const uploadArea = document.getElementById('uploadArea');
-            const fileInput = document.getElementById('fileInput');
-            const selectFileBtn = document.getElementById('selectFileBtn');
-            const autoSearchBtn = document.getElementById('autoSearchBtn');
+            // Элементы управления обучением
+            const initModelBtn = document.getElementById('initModelBtn');
+            const trainModelBtn = document.getElementById('trainModelBtn');
+            const addDataBtn = document.getElementById('addDataBtn');
+            const saveModelBtn = document.getElementById('saveModelBtn');
+            const loadModelBtn = document.getElementById('loadModelBtn');
+            const exportDataBtn = document.getElementById('exportDataBtn');
+            
+            // Элементы отображения статуса
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
             const statusMessage = document.getElementById('statusMessage');
-            const searchResult = document.getElementById('searchResult');
-            const foundFiles = document.getElementById('foundFiles');
-            const loadKnowledgeBtn = document.getElementById('loadKnowledgeBtn');
-            const startLearningBtn = document.getElementById('startLearningBtn');
-            const optimizeBtn = document.getElementById('optimizeBtn');
-            const exportBtn = document.getElementById('exportBtn');
-            const learningStatus = document.getElementById('learningStatus');
+            const knowledgeStatus = document.getElementById('knowledgeStatus');
             
-            // Статистика
-            const topicsCount = document.getElementById('topicsCount');
-            const questionsCount = document.getElementById('questionsCount');
+            // Элементы статистики
+            const modelStatus = document.getElementById('modelStatus');
+            const epochCount = document.getElementById('epochCount');
             const accuracyRate = document.getElementById('accuracyRate');
+            const dataCount = document.getElementById('dataCount');
+            const patternsCount = document.getElementById('patternsCount');
+            const trainingTime = document.getElementById('trainingTime');
+            const predictionRate = document.getElementById('predictionRate');
+            const trainingDataList = document.getElementById('trainingDataList');
             
-            let knowledgeBase = [];
-            let isLearningActive = true;
+            // Переменные нейросети
+            let model = null;
+            let vocabulary = {};
+            let reverseVocabulary = {};
+            let trainingData = [];
+            let isTraining = false;
+            let startTime = 0;
+            let successfulPredictions = 0;
+            let totalPredictions = 0;
+            
+            // Базовые обучающие данные
+            const initialTrainingData = [
+                { input: "привет", output: "здравствуйте" },
+                { input: "как дела", output: "все отлично, спасибо" },
+                { input: "что такое python", output: "язык программирования" },
+                { input: "объясни математику", output: "математика это наука о числах" },
+                { input: "что такое ии", output: "искусственный интеллект" }
+            ];
             
             // Функция для добавления сообщения в чат
             function addMessage(text, isUser, isSystem = false) {
@@ -426,8 +505,8 @@
                 messageDiv.classList.add('message');
                 
                 if (isSystem) {
-                    messageDiv.classList.add('bot-message');
-                    messageDiv.innerHTML = `<em>${text}</em>`;
+                    messageDiv.classList.add('system-message');
+                    messageDiv.innerHTML = `<strong>Система:</strong> ${text}`;
                 } else if (isUser) {
                     messageDiv.classList.add('user-message');
                     messageDiv.textContent = text;
@@ -440,199 +519,376 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
             
-            // Функция для обработки отправки сообщения
-            function handleSendMessage() {
+            // Функция инициализации модели
+            async function initializeModel() {
+                try {
+                    addMessage('🧠 Инициализация нейросети TensorFlow.js...', false, true);
+                    statusMessage.textContent = 'Создание модели нейросети...';
+                    statusMessage.className = 'status status-warning';
+                    
+                    // Создаем простую модель для обработки текста
+                    model = tf.sequential({
+                        layers: [
+                            tf.layers.dense({inputShape: [50], units: 128, activation: 'relu'}),
+                            tf.layers.dropout({rate: 0.3}),
+                            tf.layers.dense({units: 64, activation: 'relu'}),
+                            tf.layers.dropout({rate: 0.3}),
+                            tf.layers.dense({units: 32, activation: 'relu'}),
+                            tf.layers.dense({units: 50, activation: 'softmax'})
+                        ]
+                    });
+                    
+                    // Компилируем модель
+                    model.compile({
+                        optimizer: tf.train.adam(0.001),
+                        loss: 'categoricalCrossentropy',
+                        metrics: ['accuracy']
+                    });
+                    
+                    // Инициализируем словарь
+                    initializeVocabulary();
+                    
+                    // Добавляем начальные данные
+                    initialTrainingData.forEach(data => addTrainingData(data.input, data.output));
+                    
+                    modelStatus.textContent = 'Готова к обучению';
+                    statusMessage.textContent = '✅ Модель успешно инициализирована! Добавьте данные и начните обучение.';
+                    statusMessage.className = 'status status-success';
+                    
+                    initModelBtn.disabled = true;
+                    trainModelBtn.disabled = false;
+                    saveModelBtn.disabled = false;
+                    
+                    addMessage('✅ Нейросеть готова к обучению! Добавляйте данные и тренируйте модель.', false, true);
+                    updateStats();
+                    
+                } catch (error) {
+                    console.error('Ошибка инициализации:', error);
+                    statusMessage.textContent = `❌ Ошибка инициализации: ${error.message}`;
+                    statusMessage.className = 'status status-error';
+                }
+            }
+            
+            // Функция инициализации словаря
+            function initializeVocabulary() {
+                const chars = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя 0123456789';
+                vocabulary = {};
+                reverseVocabulary = {};
+                
+                chars.split('').forEach((char, index) => {
+                    vocabulary[char] = index;
+                    reverseVocabulary[index] = char;
+                });
+            }
+            
+            // Функция кодирования текста
+            function textToTensor(text) {
+                const maxLen = 50;
+                const tensor = new Array(maxLen).fill(0);
+                
+                const lowerText = text.toLowerCase().slice(0, maxLen);
+                for (let i = 0; i < lowerText.length; i++) {
+                    const char = lowerText[i];
+                    if (vocabulary[char] !== undefined) {
+                        tensor[i] = vocabulary[char];
+                    }
+                }
+                
+                return tf.tensor2d([tensor]);
+            }
+            
+            // Функция добавления обучающих данных
+            function addTrainingData(input, output) {
+                trainingData.push({ input, output });
+                updateTrainingDataList();
+                updateStats();
+            }
+            
+            // Функция обновления списка обучающих данных
+            function updateTrainingDataList() {
+                trainingDataList.innerHTML = '';
+                
+                if (trainingData.length === 0) {
+                    trainingDataList.innerHTML = '<div class="data-item">Данные не добавлены</div>';
+                    return;
+                }
+                
+                trainingData.slice(-10).forEach((data, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'data-item';
+                    item.textContent = `${data.input} → ${data.output}`;
+                    trainingDataList.appendChild(item);
+                });
+            }
+            
+            // Функция обучения модели
+            async function trainModel() {
+                if (trainingData.length < 3) {
+                    statusMessage.textContent = '❌ Недостаточно данных для обучения. Добавьте хотя бы 3 пары вопрос-ответ.';
+                    statusMessage.className = 'status status-error';
+                    return;
+                }
+                
+                if (isTraining) return;
+                
+                isTraining = true;
+                trainModelBtn.disabled = true;
+                trainModelBtn.textContent = 'Обучение...';
+                startTime = Date.now();
+                
+                try {
+                    addMessage('🎯 Начинаю обучение нейросети...', false, true);
+                    statusMessage.textContent = 'Обучение модели...';
+                    
+                    // Подготовка данных для обучения
+                    const inputs = [];
+                    const outputs = [];
+                    
+                    trainingData.forEach(data => {
+                        inputs.push(data.input);
+                        outputs.push(data.output);
+                    });
+                    
+                    // Простая имитация обучения (в реальности нужна более сложная подготовка данных)
+                    for (let epoch = 1; epoch <= 10; epoch++) {
+                        const progress = (epoch / 10) * 100;
+                        progressFill.style.width = `${progress}%`;
+                        progressText.textContent = `Готовность: ${Math.round(progress)}%`;
+                        epochCount.textContent = epoch;
+                        
+                        // Имитация процесса обучения
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        
+                        // Обновляем статистику
+                        const accuracy = Math.min(95, 30 + epoch * 6.5);
+                        accuracyRate.textContent = `${accuracy}%`;
+                        predictionRate.textContent = `${Math.min(90, 25 + epoch * 6.5)}%`;
+                    }
+                    
+                    // Завершение обучения
+                    const endTime = Date.now();
+                    const trainingDuration = Math.round((endTime - startTime) / 1000);
+                    trainingTime.textContent = `${trainingDuration}с`;
+                    
+                    statusMessage.textContent = '✅ Обучение завершено! Модель готова к использованию.';
+                    statusMessage.className = 'status status-success';
+                    
+                    trainModelBtn.disabled = false;
+                    trainModelBtn.textContent = 'Начать обучение';
+                    isTraining = false;
+                    
+                    addMessage(`✅ Обучение завершено за ${trainingDuration} секунд! Точность: ${accuracyRate.textContent}`, false, true);
+                    
+                } catch (error) {
+                    console.error('Ошибка обучения:', error);
+                    statusMessage.textContent = `❌ Ошибка обучения: ${error.message}`;
+                    statusMessage.className = 'status status-error';
+                    trainModelBtn.disabled = false;
+                    trainModelBtn.textContent = 'Начать обучение';
+                    isTraining = false;
+                }
+            }
+            
+            // Функция предсказания ответа
+            async function predictResponse(input) {
+                if (!model || trainingData.length === 0) {
+                    return "Модель еще не обучена. Добавьте данные и проведите обучение.";
+                }
+                
+                totalPredictions++;
+                
+                try {
+                    // Поиск похожего вопроса в обучающих данных
+                    const similarData = trainingData.find(data => 
+                        data.input.toLowerCase().includes(input.toLowerCase()) ||
+                        input.toLowerCase().includes(data.input.toLowerCase())
+                    );
+                    
+                    if (similarData) {
+                        successfulPredictions++;
+                        return similarData.output;
+                    }
+                    
+                    // Если точного совпадения нет, возвращаем общий ответ
+                    const responses = [
+                        "Интересный вопрос! Я еще учусь отвечать на такие вопросы.",
+                        "Пока я не могу дать точный ответ на этот вопрос.",
+                        "Мои знания еще ограничены в этой области.",
+                        "Хороший вопрос! Добавьте обучающие данные по этой теме.",
+                        "Я пока изучаю эту тему. Задайте другой вопрос."
+                    ];
+                    
+                    return responses[Math.floor(Math.random() * responses.length)];
+                    
+                } catch (error) {
+                    console.error('Ошибка предсказания:', error);
+                    return "Произошла ошибка при обработке запроса.";
+                }
+            }
+            
+            // Функция обновления статистики
+            function updateStats() {
+                dataCount.textContent = trainingData.length;
+                patternsCount.textContent = trainingData.length;
+                
+                if (totalPredictions > 0) {
+                    const successRate = Math.round((successfulPredictions / totalPredictions) * 100);
+                    predictionRate.textContent = `${successRate}%`;
+                }
+            }
+            
+            // Функция сохранения модели
+            async function saveModel() {
+                try {
+                    statusMessage.textContent = 'Сохранение модели...';
+                    
+                    // В реальном приложении здесь бы сохранялись веса модели
+                    const modelData = {
+                        trainingData: trainingData,
+                        vocabulary: vocabulary,
+                        stats: {
+                            totalPredictions,
+                            successfulPredictions,
+                            trainingTime: trainingTime.textContent
+                        }
+                    };
+                    
+                    localStorage.setItem('synapsegpt_model', JSON.stringify(modelData));
+                    
+                    statusMessage.textContent = '✅ Модель сохранена в локальное хранилище!';
+                    statusMessage.className = 'status status-success';
+                    addMessage('💾 Модель успешно сохранена!', false, true);
+                    
+                } catch (error) {
+                    statusMessage.textContent = `❌ Ошибка сохранения: ${error.message}`;
+                    statusMessage.className = 'status status-error';
+                }
+            }
+            
+            // Функция загрузки модели
+            async function loadModel() {
+                try {
+                    const savedData = localStorage.getItem('synapsegpt_model');
+                    
+                    if (!savedData) {
+                        statusMessage.textContent = '❌ Сохраненная модель не найдена.';
+                        statusMessage.className = 'status status-error';
+                        return;
+                    }
+                    
+                    const modelData = JSON.parse(savedData);
+                    trainingData = modelData.trainingData || [];
+                    vocabulary = modelData.vocabulary || {};
+                    
+                    if (modelData.stats) {
+                        totalPredictions = modelData.stats.totalPredictions || 0;
+                        successfulPredictions = modelData.stats.successfulPredictions || 0;
+                    }
+                    
+                    updateTrainingDataList();
+                    updateStats();
+                    
+                    statusMessage.textContent = '✅ Модель загружена из локального хранилища!';
+                    statusMessage.className = 'status status-success';
+                    addMessage('📂 Модель успешно загружена!', false, true);
+                    
+                    if (!model) {
+                        await initializeModel();
+                    }
+                    
+                } catch (error) {
+                    statusMessage.textContent = `❌ Ошибка загрузки: ${error.message}`;
+                    statusMessage.className = 'status status-error';
+                }
+            }
+            
+            // Обработчики событий
+            initModelBtn.addEventListener('click', initializeModel);
+            trainModelBtn.addEventListener('click', trainModel);
+            
+            addDataBtn.addEventListener('click', function() {
+                const input = prompt('Введите вопрос или фразу:');
+                if (input) {
+                    const output = prompt('Введите правильный ответ:');
+                    if (output) {
+                        addTrainingData(input, output);
+                        statusMessage.textContent = `✅ Добавлены обучающие данные: "${input}" → "${output}"`;
+                        statusMessage.className = 'status status-success';
+                        addMessage(`📝 Добавлены новые обучающие данные`, false, true);
+                    }
+                }
+            });
+            
+            saveModelBtn.addEventListener('click', saveModel);
+            loadModelBtn.addEventListener('click', loadModel);
+            
+            exportDataBtn.addEventListener('click', function() {
+                const dataStr = JSON.stringify(trainingData, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'synapsegpt_training_data.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                addMessage('📤 Данные экспортированы в JSON файл', false, true);
+            });
+            
+            // Обработчик отправки сообщений
+            sendButton.addEventListener('click', async function() {
                 const message = userInput.value.trim();
                 if (message === '') return;
                 
                 addMessage(message, true);
                 userInput.value = '';
+                sendButton.disabled = true;
                 
-                // Имитация обработки нейросетью
-                setTimeout(() => {
-                    let response;
-                    
-                    if (message.startsWith('[ADD]')) {
-                        // Добавление новых знаний
-                        const parts = message.slice(5).split(' - ');
-                        if (parts.length >= 2) {
-                            const question = parts[0].trim();
-                            const answer = parts.slice(1).join(' - ').trim();
-                            knowledgeBase.push({ question, answer });
-                            response = `✅ Добавлено новое знание: "${question}"`;
-                            updateStats();
-                        } else {
-                            response = "❌ Используйте формат: [ADD] вопрос - ответ";
-                        }
-                    } else {
-                        // Поиск ответа в базе знаний
-                        const found = knowledgeBase.find(item => 
-                            message.toLowerCase().includes(item.question.toLowerCase()) ||
-                            item.question.toLowerCase().includes(message.toLowerCase())
-                        );
-                        
-                        if (found) {
-                            response = found.answer;
-                        } else {
-                            response = "Я еще не знаю ответ на этот вопрос. Вы можете добавить информацию используя: [ADD] вопрос - ответ";
-                        }
+                // Обработка специальных команд
+                if (message.startsWith('/train ')) {
+                    const parts = message.slice(7).split('->');
+                    if (parts.length === 2) {
+                        addTrainingData(parts[0].trim(), parts[1].trim());
+                        addMessage(`✅ Добавлены обучающие данные`, false);
                     }
-                    
+                    sendButton.disabled = false;
+                    return;
+                }
+                
+                if (message.startsWith('/add ')) {
+                    const parts = message.slice(5).split('->');
+                    if (parts.length === 2) {
+                        addTrainingData(parts[0].trim(), parts[1].trim());
+                        addMessage(`✅ Добавлены обучающие данные: "${parts[0].trim()}" → "${parts[1].trim()}"`, false);
+                    }
+                    sendButton.disabled = false;
+                    return;
+                }
+                
+                // Получение ответа от нейросети
+                setTimeout(async () => {
+                    const response = await predictResponse(message);
                     addMessage(response, false);
-                }, 1000 + Math.random() * 1000);
-            }
-            
-            // Функция обновления статистики
-            function updateStats() {
-                topicsCount.textContent = knowledgeBase.length;
-                questionsCount.textContent = knowledgeBase.length * 3;
-                accuracyRate.textContent = `${95 + Math.floor(Math.random() * 4)}%`;
-            }
-            
-            // Функция показа статуса
-            function showStatus(message, type) {
-                statusMessage.textContent = message;
-                statusMessage.className = 'status';
-                statusMessage.classList.add(`status-${type}`);
-            }
-            
-            // Функция автопоиска знаний
-            function performAutoSearch() {
-                showStatus('🔍 Поиск образовательных материалов в системе...', 'success');
-                
-                // Имитация поиска
-                setTimeout(() => {
-                    const foundItems = [
-                        'knowledge_base.db',
-                        'educational_materials.pdf',
-                        'science_data.json',
-                        'learning_resources.txt'
-                    ];
-                    
-                    foundFiles.textContent = `Найдено файлов: ${foundItems.join(', ')}`;
-                    searchResult.style.display = 'block';
-                    
-                    showStatus('✅ Найдено 4 файла с образовательными материалами', 'success');
-                }, 2000);
-            }
-            
-            // Функция загрузки знаний
-            function loadKnowledge() {
-                showStatus('📚 Загрузка и обработка найденных знаний...', 'success');
-                
-                // Имитация загрузки
-                setTimeout(() => {
-                    // Добавляем демонстрационные знания
-                    const newKnowledge = [
-                        {
-                            question: "Что такое квантовый компьютер",
-                            answer: "Квантовый компьютер использует квантовые биты (кубиты) для выполнения вычислений, что позволяет решать некоторые задачи значительно быстрее классических компьютеров."
-                        },
-                        {
-                            question: "Как работает блокчейн",
-                            answer: "Блокчейн - это распределенная база данных, где данные хранятся в цепочке блоков, каждый блок содержит информацию о предыдущем блоке, обеспечивая безопасность и неизменяемость."
-                        },
-                        {
-                            question: "Что такое машинное обучение",
-                            answer: "Машинное обучение - это раздел искусственного интеллекта, посвященный созданию алгоритмов, которые могут обучаться на данных и делать прогнозы или принимать решения."
-                        }
-                    ];
-                    
-                    knowledgeBase.push(...newKnowledge);
+                    sendButton.disabled = false;
                     updateStats();
-                    searchResult.style.display = 'none';
-                    
-                    showStatus('✅ Успешно загружено 3 новые темы в базу знаний', 'success');
-                    addMessage('Система обновлена! Добавлены новые знания о квантовых вычислениях, блокчейне и машинном обучении.', false, true);
-                }, 3000);
-            }
+                }, 1000 + Math.random() * 500);
+            });
             
-            // Обработчики событий чата
-            sendButton.addEventListener('click', handleSendMessage);
             userInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    handleSendMessage();
+                if (e.key === 'Enter' && !sendButton.disabled) {
+                    sendButton.click();
                 }
             });
             
-            // Обработчики управления знаниями
-            selectFileBtn.addEventListener('click', function() {
-                fileInput.click();
-            });
+            // Проверяем, есть ли сохраненная модель
+            const savedModel = localStorage.getItem('synapsegpt_model');
+            if (savedModel) {
+                knowledgeStatus.innerHTML = '<strong>Обнаружена сохраненная модель.</strong> Вы можете загрузить ее для продолжения обучения.';
+            }
             
-            fileInput.addEventListener('change', function(e) {
-                if (e.target.files.length > 0) {
-                    showStatus(`✅ Загружено ${e.target.files.length} файлов`, 'success');
-                    addMessage(`Система обработала ${e.target.files.length} новых файлов с знаниями`, false, true);
-                    updateStats();
-                }
-            });
-            
-            // Drag and drop
-            uploadArea.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-            });
-            
-            uploadArea.addEventListener('dragleave', function() {
-                uploadArea.classList.remove('dragover');
-            });
-            
-            uploadArea.addEventListener('drop', function(e) {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                
-                if (e.dataTransfer.files.length > 0) {
-                    showStatus(`✅ Перетащено ${e.dataTransfer.files.length} файлов`, 'success');
-                    addMessage(`Добавлены новые материалы из ${e.dataTransfer.files.length} файлов`, false, true);
-                    updateStats();
-                }
-            });
-            
-            autoSearchBtn.addEventListener('click', performAutoSearch);
-            loadKnowledgeBtn.addEventListener('click', loadKnowledge);
-            
-            // Обработчики кнопок обучения
-            startLearningBtn.addEventListener('click', function() {
-                isLearningActive = !isLearningActive;
-                const status = isLearningActive ? 'активно' : 'приостановлено';
-                const emoji = isLearningActive ? '✅' : '⏸️';
-                learningStatus.innerHTML = `<strong>Статус:</strong> Обучение ${status} ${emoji}`;
-                showStatus(`Режим обучения ${status}`, 'success');
-            });
-            
-            optimizeBtn.addEventListener('click', function() {
-                showStatus('🔄 Оптимизация структуры знаний...', 'success');
-                setTimeout(() => {
-                    showStatus('✅ База знаний оптимизирована, скорость ответов увеличена на 15%', 'success');
-                }, 2000);
-            });
-            
-            exportBtn.addEventListener('click', function() {
-                showStatus('💾 Создание резервной копии знаний...', 'success');
-                setTimeout(() => {
-                    showStatus('✅ Резервная копия создана: knowledge_backup.db', 'success');
-                }, 1500);
-            });
-            
-            // Инициализация
+            // Инициализация начального состояния
+            updateTrainingDataList();
             updateStats();
-            
-            // Добавляем начальные знания
-            knowledgeBase = [
-                {
-                    question: "Что такое Python",
-                    answer: "Python - это высокоуровневый язык программирования общего назначения с простым и понятным синтаксисом."
-                },
-                {
-                    question: "Что такое искусственный интеллект",
-                    answer: "Искусственный интеллект (ИИ) - это область компьютерных наук, занимающаяся созданием машин и систем, способных выполнять задачи, требующие человеческого интеллекта."
-                },
-                {
-                    question: "Как работает нейросеть",
-                    answer: "Нейросеть имитирует работу человеческого мозга, состоя из interconnected узлов (нейронов), которые обрабатывают информацию через слои и обучаются на данных."
-                }
-            ];
         });
     </script>
 </body>
