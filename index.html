@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LumenAI | AI Ассистент</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f5ff;
+            --primary-glow: #00a2ff;
+            --secondary: #ff00e5;
+            --accent: #00ff95;
+            --background: #0a0a1a;
+            --surface: #151530;
+            --surface-glow: #1e1e40;
+            --text: #ffffff;
+            --text-secondary: #b8b8ff;
+            --success: #00ff95;
+            --warning: #ffb800;
+            --error: #ff4757;
+            --user-msg: #1e3a8a;
+            --ai-msg: #1e1e40;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .app {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* API Settings */
+        .api-settings {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .api-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .api-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px 15px;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .api-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .save-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Main Chat Area */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 200px);
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .new-chat-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .new-chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 245, 255, 0.3);
+        }
+
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .history-item.active {
+            background: rgba(0, 245, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            background: var(--surface);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: var(--user-msg);
+            border-bottom-right-radius: 5px;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background: var(--ai-msg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-content {
+            word-wrap: break-word;
+        }
+
+        .message-time {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--surface-glow);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .message-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            color: var(--text);
+            font-size: 1rem;
+            resize: none;
+            min-height: 60px;
+            max-height: 120px;
+            font-family: inherit;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .send-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 245, 255, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background: var(--ai-msg);
+            border-radius: 18px;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        /* Status */
+        .status {
+            text-align: center;
+            padding: 10px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .connected { color: var(--success); }
+        .error { color: var(--error); }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-brain-circuit"></i>
+                LumenAI
+            </div>
+            <div class="tagline">Продвинутый AI ассистент</div>
+        </header>
+
+        <!-- Настройки API -->
+        <div class="api-settings">
+            <div class="api-input-group">
+                <input 
+                    type="password" 
+                    class="api-input" 
+                    id="apiKeyInput" 
+                    placeholder="Введите ваш API ключ OpenAI здесь..."
+                >
+                <button class="save-btn" id="saveApiKey">
+                    <i class="fas fa-save"></i>
+                    Сохранить
+                </button>
+            </div>
+            <div class="status" id="apiStatus">
+                API ключ не установлен
+            </div>
+        </div>
+
+        <!-- Основной чат -->
+        <div class="chat-container">
+            <!-- Боковая панель -->
+            <div class="sidebar">
+                <button class="new-chat-btn" id="newChatBtn">
+                    <i class="fas fa-plus"></i>
+                    Новый чат
+                </button>
+                <div class="chat-history" id="chatHistory">
+                    <!-- История чатов будет здесь -->
+                </div>
+            </div>
+
+            <!-- Область сообщений -->
+            <div class="chat-area">
+                <div class="messages-container" id="messagesContainer">
+                    <!-- Сообщения будут здесь -->
+                </div>
+
+                <!-- Индикатор набора -->
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                    <span>LumenAI печатает...</span>
+                </div>
+
+                <!-- Поле ввода -->
+                <div class="input-area">
+                    <div class="input-container">
+                        <textarea 
+                            class="message-input" 
+                            id="messageInput" 
+                            placeholder="Введите ваше сообщение..."
+                            rows="1"
+                        ></textarea>
+                        <button class="send-btn" id="sendButton" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class LumenAI {
+            constructor() {
+                this.apiKey = '';
+                this.conversationHistory = [];
+                this.currentChatId = this.generateChatId();
+                this.isProcessing = false;
+                
+                this.init();
+            }
+
+            init() {
+                this.loadApiKey();
+                this.setupEventListeners();
+                this.updateUI();
+            }
+
+            setupEventListeners() {
+                // Сохранение API ключа
+                document.getElementById('saveApiKey').addEventListener('click', () => this.saveApiKey());
+                document.getElementById('apiKeyInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.saveApiKey();
+                });
+
+                // Отправка сообщения
+                document.getElementById('sendButton').addEventListener('click', () => this.sendMessage());
+                document.getElementById('messageInput').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                // Автоматическое изменение высоты textarea
+                document.getElementById('messageInput').addEventListener('input', this.autoResizeTextarea);
+
+                // Новый чат
+                document.getElementById('newChatBtn').addEventListener('click', () => this.newChat());
+            }
+
+            autoResizeTextarea() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            }
+
+            saveApiKey() {
+                const apiKeyInput = document.getElementById('apiKeyInput');
+                this.apiKey = apiKeyInput.value.trim();
+                
+                if (this.apiKey) {
+                    localStorage.setItem('lumenai_api_key', this.apiKey);
+                    this.updateApiStatus('API ключ сохранен', 'connected');
+                    this.updateUI();
+                } else {
+                    this.updateApiStatus('Введите API ключ', 'error');
+                }
+            }
+
+            loadApiKey() {
+                const savedKey = localStorage.getItem('lumenai_api_key');
+                if (savedKey) {
+                    this.apiKey = savedKey;
+                    document.getElementById('apiKeyInput').value = savedKey;
+                    this.updateApiStatus('API ключ загружен', 'connected');
+                }
+            }
+
+            async sendMessage() {
+                const messageInput = document.getElementById('messageInput');
+                const message = messageInput.value.trim();
+                
+                if (!message || this.isProcessing || !this.apiKey) return;
+
+                // Добавляем сообщение пользователя
+                this.addMessage(message, 'user');
+                messageInput.value = '';
+                this.autoResizeTextarea.call(messageInput);
+                
+                // Показываем индикатор набора
+                this.showTypingIndicator();
+                this.isProcessing = true;
+                this.updateUI();
+
+                try {
+                    // ВАШ КОД ДЛЯ ИНТЕГРАЦИИ С OPENAI API ЗДЕСЬ
+                    const response = await this.callOpenAIAPI(message);
+                    this.addMessage(response, 'ai');
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                    this.addMessage('Извините, произошла ошибка при обработке запроса.', 'ai');
+                }
+
+                this.hideTypingIndicator();
+                this.isProcessing = false;
+                this.updateUI();
+            }
+
+            async callOpenAIAPI(userMessage) {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-3.5-turbo',
+                        messages: [
+                            ...this.conversationHistory,
+                            { role: 'user', content: userMessage }
+                        ],
+                        max_tokens: 1000,
+                        temperature: 0.7
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.choices[0].message.content;
+
+                // Временная заглушка - замените на реальный код выше
+                return `Это ответ от AI. Ваше сообщение: "${userMessage}"\n\nДля реальной работы замените код в методе callOpenAIAPI() на интеграцию с OpenAI API.`;
+            }
+
+            addMessage(content, role) {
+                const message = {
+                    id: Date.now(),
+                    role: role,
+                    content: content,
+                    timestamp: new Date().toLocaleTimeString()
+                };
+
+                this.conversationHistory.push(message);
+                this.displayMessage(message);
+                this.saveChatHistory();
+            }
+
+            displayMessage(message) {
+                const messagesContainer = document.getElementById('messagesContainer');
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${message.role}-message`;
+                
+                messageElement.innerHTML = `
+                    <div class="message-content">${this.formatMessage(message.content)}</div>
+                    <div class="message-time">${message.timestamp}</div>
+                `;
+
+                messagesContainer.appendChild(messageElement);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            formatMessage(content) {
+                // Простое форматирование текста
+                return content.replace(/\n/g, '<br>');
+            }
+
+            showTypingIndicator() {
+                document.getElementById('typingIndicator').style.display = 'flex';
+                document.getElementById('messagesContainer').scrollTop = document.getElementById('messagesContainer').scrollHeight;
+            }
+
+            hideTypingIndicator() {
+                document.getElementById('typingIndicator').style.display = 'none';
+            }
+
+            newChat() {
+                this.conversationHistory = [];
+                this.currentChatId = this.generateChatId();
+                document.getElementById('messagesContainer').innerHTML = '';
+                this.updateUI();
+            }
+
+            generateChatId() {
+                return 'chat_' + Date.now();
+            }
+
+            saveChatHistory() {
+                const chatData = {
+                    id: this.currentChatId,
+                    title: this.conversationHistory[0]?.content.substring(0, 30) + '...' || 'Новый чат',
+                    messages: this.conversationHistory,
+                    timestamp: Date.now()
+                };
+                
+                let chats = JSON.parse(localStorage.getItem('lumenai_chats') || '[]');
+                const existingIndex = chats.findIndex(chat => chat.id === this.currentChatId);
+                
+                if (existingIndex !== -1) {
+                    chats[existingIndex] = chatData;
+                } else {
+                    chats.push(chatData);
+                }
+                
+                localStorage.setItem('lumenai_chats', JSON.stringify(chats));
+                this.updateChatHistory();
+            }
+
+            updateChatHistory() {
+                const chatHistory = document.getElementById('chatHistory');
+                const chats = JSON.parse(localStorage.getItem('lumenai_chats') || '[]');
+                
+                chatHistory.innerHTML = chats.map(chat => `
+                    <div class="history-item ${chat.id === this.currentChatId ? 'active' : ''}" 
+                         onclick="lumenAI.loadChat('${chat.id}')">
+                        <div><strong>${chat.title}</strong></div>
+                        <small>${new Date(chat.timestamp).toLocaleDateString()}</small>
+                    </div>
+                `).join('');
+            }
+
+            loadChat(chatId) {
+                const chats = JSON.parse(localStorage.getItem('lumenai_chats') || '[]');
+                const chat = chats.find(c => c.id === chatId);
+                
+                if (chat) {
+                    this.currentChatId = chatId;
+                    this.conversationHistory = chat.messages;
+                    
+                    // Очищаем и перерисовываем сообщения
+                    const messagesContainer = document.getElementById('messagesContainer');
+                    messagesContainer.innerHTML = '';
+                    this.conversationHistory.forEach(msg => this.displayMessage(msg));
+                    
+                    this.updateChatHistory();
+                }
+            }
+
+            updateApiStatus(message, type) {
+                const statusElement = document.getElementById('apiStatus');
+                statusElement.textContent = message;
+                statusElement.className = `status ${type}`;
+            }
+
+            updateUI() {
+                const sendButton = document.getElementById('sendButton');
+                const messageInput = document.getElementById('messageInput');
+                
+                sendButton.disabled = this.isProcessing || !this.apiKey || !messageInput.value.trim();
+            }
+        }
+
+        // Инициализация приложения
+        let lumenAI;
+        document.addEventListener('DOMContentLoaded', () => {
+            lumenAI = new LumenAI();
+        });
+    </script>
+</body>
+</html>
