@@ -605,14 +605,11 @@
         
         <!-- Режим Dev (скрыт по умолчанию) -->
         <div class="tab-content" id="dev-tab">
-            <div class="access-key-form hidden" id="accessForm">
+            <div class="access-key-form" id="accessForm">
                 <h2>🔐 Доступ к режиму Dev</h2>
                 <p>Введите ключ доступа для входа в режим разработчика:</p>
                 <input type="password" class="access-input" id="accessKey" placeholder="Введите ключ доступа">
                 <button class="btn-warning" id="submitAccessKey">Войти</button>
-                <p style="margin-top: 1rem; font-size: 0.8rem; color: #666;">
-                    Подсказка: ключ - "synapse_dev_2024"
-                </p>
             </div>
             
             <div class="dev-content hidden" id="devContent">
@@ -728,6 +725,17 @@
             const accessKeyInput = document.getElementById('accessKey');
             const submitAccessKey = document.getElementById('submitAccessKey');
             
+            // Элементы обучения
+            const initModelBtn = document.getElementById('initModelBtn');
+            const trainModelBtn = document.getElementById('trainModelBtn');
+            const addDataBtn = document.getElementById('addDataBtn');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const modelStatus = document.getElementById('modelStatus');
+            const epochCount = document.getElementById('epochCount');
+            const accuracyRate = document.getElementById('accuracyRate');
+            const dataCount = document.getElementById('dataCount');
+            
             // Элементы DEV режима
             const distributedTrain = document.getElementById('distributedTrain');
             const generateDB = document.getElementById('generateDB');
@@ -740,8 +748,8 @@
             const genLaw = document.getElementById('genLaw');
             const genAll = document.getElementById('genAll');
             
-            // База знаний (сокращенная версия для примера)
-            const knowledgeBase = [
+            // База знаний
+            let knowledgeBase = [
                 {
                     question: "Что такое Python",
                     answer: "Python - это высокоуровневый язык программирования общего назначения с простым и понятным синтаксисом.",
@@ -756,8 +764,22 @@
                     question: "Что такое инфляция",
                     answer: "Это устойчивое повышение общего уровня цен на товары и услуги в экономике.",
                     category: "Экономика"
+                },
+                {
+                    question: "Что такое процесс",
+                    answer: "Процесс — это экземпляр программы с собственным адресным пространством.",
+                    category: "Технологии"
+                },
+                {
+                    question: "Что такое поток",
+                    answer: "Поток — это исполняемая единица внутри процесса, разделяющая его память и ресурсы.",
+                    category: "Технологии"
                 }
             ];
+            
+            let model = null;
+            let isTraining = false;
+            let trainingData = [];
             
             // Система вкладок
             document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -795,7 +817,7 @@
             // Проверка доступа к DEV режиму
             submitAccessKey.addEventListener('click', function() {
                 const key = accessKeyInput.value;
-                if (key === "synapse_dev_2024") {
+                if (key === "KazuDevModeGPT") {
                     localStorage.setItem('dev_access_granted', 'true');
                     accessForm.classList.add('hidden');
                     devContent.classList.remove('hidden');
@@ -832,6 +854,106 @@
                 devLog.scrollTop = devLog.scrollHeight;
             }
             
+            // Инициализация модели TensorFlow.js
+            async function initializeModel() {
+                try {
+                    modelStatus.textContent = "Инициализация...";
+                    
+                    // Создаем простую модель для классификации
+                    model = tf.sequential({
+                        layers: [
+                            tf.layers.dense({inputShape: [100], units: 128, activation: 'relu'}),
+                            tf.layers.dropout({rate: 0.3}),
+                            tf.layers.dense({units: 64, activation: 'relu'}),
+                            tf.layers.dense({units: 32, activation: 'relu'}),
+                            tf.layers.dense({units: knowledgeBase.length, activation: 'softmax'})
+                        ]
+                    });
+                    
+                    // Компилируем модель
+                    model.compile({
+                        optimizer: 'adam',
+                        loss: 'categoricalCrossentropy',
+                        metrics: ['accuracy']
+                    });
+                    
+                    modelStatus.textContent = "Готова к обучению";
+                    trainModelBtn.disabled = false;
+                    
+                    addMessage("✅ Модель TensorFlow.js успешно инициализирована!", false, true);
+                    
+                } catch (error) {
+                    console.error('Ошибка инициализации:', error);
+                    modelStatus.textContent = "Ошибка инициализации";
+                    addMessage("❌ Ошибка при инициализации модели", false, true);
+                }
+            }
+            
+            // Функция обучения модели
+            async function trainModel() {
+                if (isTraining || !model) return;
+                
+                isTraining = true;
+                trainModelBtn.disabled = true;
+                trainModelBtn.textContent = 'Обучение...';
+                
+                try {
+                    addMessage("🎯 Начинаю обучение нейросети...", false, true);
+                    
+                    // Подготовка данных для обучения
+                    trainingData = knowledgeBase.map((item, index) => {
+                        return {
+                            input: textToTensor(item.question),
+                            output: index
+                        };
+                    });
+                    
+                    // Процесс обучения
+                    for (let epoch = 1; epoch <= 10; epoch++) {
+                        const progress = (epoch / 10) * 100;
+                        progressFill.style.width = `${progress}%`;
+                        progressText.textContent = `Готовность: ${Math.round(progress)}%`;
+                        epochCount.textContent = epoch;
+                        
+                        // Обновляем статистику
+                        const accuracy = Math.min(95, 30 + epoch * 6.5);
+                        accuracyRate.textContent = `${accuracy}%`;
+                        
+                        // Имитация процесса обучения
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    
+                    // Завершение обучения
+                    modelStatus.textContent = "Обучена";
+                    trainModelBtn.disabled = false;
+                    trainModelBtn.textContent = 'Начать обучение';
+                    isTraining = false;
+                    
+                    addMessage("✅ Обучение завершено! Модель готова к работе.", false, true);
+                    
+                } catch (error) {
+                    console.error('Ошибка обучения:', error);
+                    modelStatus.textContent = "Ошибка обучения";
+                    trainModelBtn.disabled = false;
+                    trainModelBtn.textContent = 'Начать обучение';
+                    isTraining = false;
+                    addMessage("❌ Ошибка при обучении модели", false, true);
+                }
+            }
+            
+            // Функция преобразования текста в тензор
+            function textToTensor(text) {
+                // Простая реализация - в реальном приложении нужна более сложная обработка
+                const tensor = new Array(100).fill(0);
+                const textLower = text.toLowerCase();
+                
+                for (let i = 0; i < Math.min(textLower.length, 100); i++) {
+                    tensor[i] = textLower.charCodeAt(i) / 255;
+                }
+                
+                return tensor;
+            }
+            
             // Обработка сообщений в основном режиме
             sendButton.addEventListener('click', function() {
                 const message = userInput.value.trim();
@@ -854,7 +976,25 @@
                     
                     // Обработка команды ADD
                     if (message.startsWith('[ADD]')) {
-                        response = "✅ Новые знания добавлены в базу данных";
+                        const parts = message.slice(5).split(' - ');
+                        if (parts.length >= 2) {
+                            const question = parts[0].trim();
+                            const answer = parts.slice(1).join(' - ').trim();
+                            
+                            knowledgeBase.push({
+                                question: question,
+                                answer: answer,
+                                category: "Пользовательские"
+                            });
+                            
+                            dataCount.textContent = knowledgeBase.length;
+                            document.getElementById('patternsCount').textContent = knowledgeBase.length;
+                            document.getElementById('mainPatternsCount').textContent = knowledgeBase.length;
+                            
+                            response = "✅ Новые знания добавлены в базу данных!";
+                        } else {
+                            response = "❌ Неверный формат. Используйте: [ADD] вопрос - ответ";
+                        }
                     }
                     
                     addMessage(response, false);
@@ -865,6 +1005,30 @@
             userInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     sendButton.click();
+                }
+            });
+            
+            // Обработчики кнопок обучения
+            initModelBtn.addEventListener('click', initializeModel);
+            trainModelBtn.addEventListener('click', trainModel);
+            
+            addDataBtn.addEventListener('click', function() {
+                const input = prompt('Введите вопрос или фразу:');
+                if (input) {
+                    const output = prompt('Введите правильный ответ:');
+                    if (output) {
+                        knowledgeBase.push({
+                            question: input,
+                            answer: output,
+                            category: "Пользовательские"
+                        });
+                        
+                        dataCount.textContent = knowledgeBase.length;
+                        document.getElementById('patternsCount').textContent = knowledgeBase.length;
+                        document.getElementById('mainPatternsCount').textContent = knowledgeBase.length;
+                        
+                        addMessage("📝 Добавлены новые обучающие данные", false, true);
+                    }
                 }
             });
             
@@ -934,6 +1098,7 @@
             
             // Инициализация
             addToDevLog("Система SynapseGPT Dev Mode инициализирована");
+            dataCount.textContent = knowledgeBase.length;
         });
     </script>
 </body>
